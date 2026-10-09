@@ -1,14 +1,20 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.1.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): externí české titulky, automatické pauzy pro shrnutí děje a slovní zásobu pro Kiwi Browser a desktop. Primárně nastaveno pro hru The Fifth Step.
+// @version      1.2.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): externí české titulky, automatické pauzy pro shrnutí děje a slovní zásobu pro Kiwi Browser a desktop.
 // @author       NT Assistant Team
-// @match        https://www.ntathome.com/*
-// @updateURL    https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
-// @downloadURL  https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
+// @match        *://*.ntathome.com/*
+// @match        *://ntathome.com/*
+// @match        *://*.nationaltheatre.org.uk/*
+// @match        *://*.ntlive.com/*
+// @match        *://*.vhx.tv/*
+// @match        *://*.vimeo.com/*
+// @allFrames    true
 // @grant        none
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
+// @downloadURL  https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
 // ==/UserScript==
 
 (function () {
@@ -18,13 +24,6 @@
      1. DATOVÁ VRSTVA A KONFIGURACE HER (JSON STRUKTURA)
      ========================================================================== */
 
-  /**
-   * Konfigurace divadelních her mapovaná podle URL cesty nebo klíčového slova.
-   * Pro každou hru definujeme:
-   * - title: Název představení
-   * - subtitlesUrl: URL adresa WebVTT souboru s českými titulky
-   * - checkpoints: Časové body (sekundy) pro pozastavení videa se shrnutím a slovní zásobou
-   */
   const PLAYS_CONFIG = {
     // 🎭 PRIMÁRNÍ HRA: THE FIFTH STEP (David Ireland, National Theatre at Home)
     'the-fifth-step': {
@@ -120,36 +119,33 @@
       ]
     },
 
-    // Další představení: Frankenstein
+    // Další představení
     'frankenstein': {
       title: 'Frankenstein',
-      subtitlesUrl: 'https://raw.githubusercontent.com/username/ntathome-subtitles/main/frankenstein_cs.vtt',
+      subtitlesUrl: '',
       checkpoints: [
         {
           id: 'frankenstein-cp-1',
           time: 310,
           title: 'Akt I – Zrození a první vnímání světa',
-          summary: 'Victor Frankenstein dokončil svůj rouhavý experiment a vdechne život bytosti stvořené z částí těl. Monstrum se probouzí v křečích a pomalu objevuje své tělo, smysly i bolest. Victor, zděšen odpudivým zjevem svého výtvoru, v panice prchá.',
+          summary: 'Victor Frankenstein dokončil svůj rouhavý experiment a vdechne život bytosti stvořené z částí těl. Monstrum se probouzí v křečích a objevuje své tělo i bolest.',
           vocabulary: [
             { en: 'creature', cz: 'stvoření / bytost' },
-            { en: 'wretch', cz: 'ubohý tvor / bídník' },
-            { en: 'infuse life', cz: 'vdechnout život' },
-            { en: 'abandonment', cz: 'opuštění / zanechání na pospas' }
+            { en: 'wretch', cz: 'ubohý tvor / bídník' }
           ]
         }
       ]
     },
 
-    // Univerzální výchozí konfigurace
     '__default__': {
-      title: 'Divadelní asistent',
+      title: 'Asistent NT at Home',
       subtitlesUrl: '',
       checkpoints: [
         {
           id: 'demo-cp-1',
           time: 30,
-          title: 'Úvodní kontrolní bod (Ukázka)',
-          summary: 'Toto je ukázkový kontrolní bod. Asistent automaticky pozastavil video, abyste si mohli projít shrnutí děje a osvojit si klíčová slovíčka pro nadcházející scény.',
+          title: 'Ukázkový kontrolní bod',
+          summary: 'Toto je ukázkový kontrolní bod. Asistent automaticky pozastavil video, abyste si mohli projít shrnutí děje a osvojit si klíčová slovíčka.',
           vocabulary: [
             { en: 'soliloquy', cz: 'monolog / samomluva' },
             { en: 'playwright', cz: 'dramatik' },
@@ -161,7 +157,7 @@
   };
 
   /* ==========================================================================
-     2. STAV A SPRÁVA ŽIVOTNÍHO CYKLU
+     2. STAV ALESPOŇ JEDNOHO BĚHU
      ========================================================================== */
 
   const triggeredCheckpoints = new Set();
@@ -169,27 +165,42 @@
   let currentBlobUrl = null;
   let isOverlayOpen = false;
 
+  console.log('%c[NT Assistant] 🎭 Asistent je aktivní na této stránce!', 'background: #2563eb; color: white; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+
   /* ==========================================================================
-     3. VÝBĚR KONFIGURACE PODLE URL
+     3. VÝBĚR KONFIGURACE (S PODPOROU IFRAMU A REFERRERU)
      ========================================================================== */
 
-  function getCurrentConfig() {
-    const currentPath = window.location.pathname.toLowerCase();
+  function getPageUrlString() {
+    let url = window.location.href.toLowerCase();
+    try {
+      if (window.top && window.top.location && window.top.location.href) {
+        url = window.top.location.href.toLowerCase();
+      }
+    } catch (e) {
+      // Cross-origin iframe
+    }
+    if (document.referrer) {
+      url += ' ' + document.referrer.toLowerCase();
+    }
+    return url;
+  }
 
-    // 1. Přednostní kontrola pro The Fifth Step
-    if (currentPath.includes('the-fifth-step') || currentPath.includes('the_fifth_step') || currentPath.includes('fifth-step')) {
+  function getCurrentConfig() {
+    const combinedUrl = getPageUrlString();
+
+    if (combinedUrl.includes('the-fifth-step') || combinedUrl.includes('the_fifth_step') || combinedUrl.includes('fifth-step')) {
       return PLAYS_CONFIG['the-fifth-step'];
     }
 
-    // 2. Kontrola dalších her v konfiguraci
     for (const key of Object.keys(PLAYS_CONFIG)) {
       if (key === '__default__' || key === 'the-fifth-step') continue;
-      if (currentPath.includes(key)) {
+      if (combinedUrl.includes(key)) {
         return PLAYS_CONFIG[key];
       }
     }
 
-    // 3. Pokud jsme přímo na webu ntathome u neznámé hry, vrátíme buď Fifth Step nebo default
+    // Defaultně vrátíme The Fifth Step (primární hra)
     return PLAYS_CONFIG['the-fifth-step'] || PLAYS_CONFIG['__default__'];
   }
 
@@ -205,6 +216,54 @@
     const styleEl = document.createElement('style');
     styleEl.id = STYLE_ID;
     styleEl.textContent = `
+      /* Plovoucí stavový odznak v rohu obrazovky */
+      #nta-status-badge {
+        position: fixed;
+        bottom: 18px;
+        right: 18px;
+        z-index: 2147483646;
+        background: #0f172a;
+        color: #f8fafc;
+        border: 1px solid #334155;
+        border-radius: 50px;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 13px;
+        user-select: none;
+        transition: all 0.2s ease;
+      }
+      #nta-status-badge:hover {
+        border-color: #38bdf8;
+      }
+      .nta-badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        box-shadow: 0 0 8px #22c55e;
+      }
+      .nta-badge-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .nta-badge-btn:hover {
+        background: #1d4ed8;
+      }
+
+      /* Celoobrazovkový překryv */
       #nta-assistant-overlay {
         position: fixed;
         inset: 0;
@@ -418,7 +477,7 @@
           <div>
             <div class="nta-badge">
               <span>🎭</span>
-              <span>Výukový checkpoint • The Fifth Step</span>
+              <span>Výukový checkpoint</span>
             </div>
             <h2 class="nta-title" id="nta-card-title">Název scény</h2>
           </div>
@@ -638,7 +697,59 @@
   }
 
   /* ==========================================================================
-     8. DETEKCE PŘEHRÁVAČE A ASYNCHRONNÍHO NAČÍTÁNÍ
+     8. PLOVOUCÍ STAVOVÝ ODZNAK (PRO RYCHLÝ TEST A VIZUÁLNÍ KONTROLU)
+     ========================================================================== */
+
+  function renderStatusPill(config) {
+    // Odznak vykreslujeme pouze v hlavním okně (ne v každém iframu)
+    if (window.self !== window.top) return;
+    if (document.getElementById('nta-status-badge')) return;
+
+    injectStyles();
+
+    const pill = document.createElement('div');
+    pill.id = 'nta-status-badge';
+    pill.innerHTML = `
+      <div class="nta-badge-dot" id="nta-dot"></div>
+      <span style="font-weight: 700;">🎭 NT Asistent:</span>
+      <span id="nta-pill-text" style="color: #94a3b8;">${config.title}</span>
+      <button type="button" class="nta-badge-btn" id="nta-btn-test">Vyzkoušet okno ▶</button>
+    `;
+
+    document.body.appendChild(pill);
+
+    pill.querySelector('#nta-btn-test').addEventListener('click', () => {
+      const firstCp = (config.checkpoints && config.checkpoints[0]) || {
+        title: 'Testovací kontrolní bod',
+        summary: 'Toto je testovací zobrazení výukového asistenta. Vše funguje správně!',
+        vocabulary: [
+          { en: 'sponsor', cz: 'patron / mentor v AA' },
+          { en: 'moral inventory', cz: 'morální inventura' }
+        ]
+      };
+      showOverlay(firstCp, activeVideoElement || document.querySelector('video'));
+    });
+  }
+
+  function updateStatusPill(hasVideo) {
+    const dot = document.getElementById('nta-dot');
+    const text = document.getElementById('nta-pill-text');
+    if (!dot || !text) return;
+
+    const config = getCurrentConfig();
+    if (hasVideo) {
+      dot.style.background = '#22c55e';
+      dot.style.boxShadow = '0 0 8px #22c55e';
+      text.textContent = `${config.title} (Video nalezeno)`;
+    } else {
+      dot.style.background = '#eab308';
+      dot.style.boxShadow = '0 0 8px #eab308';
+      text.textContent = `${config.title} (Čekám na video)`;
+    }
+  }
+
+  /* ==========================================================================
+     9. DETEKCE PŘEHRÁVAČE A ASYNCHRONNÍHO NAČÍTÁNÍ
      ========================================================================== */
 
   function attachToVideo(video) {
@@ -649,6 +760,14 @@
 
     const config = getCurrentConfig();
     console.log('[NT Assistant] Přehrávač inicializován pro hru:', config.title);
+
+    updateStatusPill(true);
+
+    if (window.self !== window.top) {
+      try {
+        window.top.postMessage({ type: 'NTA_VIDEO_ATTACHED', title: config.title }, '*');
+      } catch (e) {}
+    }
 
     if (config.subtitlesUrl) {
       injectSubtitlesTrack(video, config.subtitlesUrl);
@@ -671,12 +790,16 @@
 
   function scanForVideoPlayer() {
     const video = document.querySelector('video');
-    if (video && video.dataset.ntaAttached !== 'true') {
+    if (video) {
       attachToVideo(video);
+    } else {
+      updateStatusPill(false);
     }
   }
 
   function initObserver() {
+    const config = getCurrentConfig();
+    renderStatusPill(config);
     scanForVideoPlayer();
 
     const observer = new MutationObserver((mutations) => {
@@ -694,6 +817,13 @@
 
     setInterval(scanForVideoPlayer, 1500);
 
+    // Příjem zprávy od přehrávače v iframe
+    window.addEventListener('message', (ev) => {
+      if (ev.data && ev.data.type === 'NTA_VIDEO_ATTACHED') {
+        updateStatusPill(true);
+      }
+    });
+
     let lastUrl = window.location.href;
     setInterval(() => {
       if (window.location.href !== lastUrl) {
@@ -710,7 +840,7 @@
   }
 
   /* ==========================================================================
-     9. SPUŠTĚNÍ
+     10. SPUŠTĚNÍ
      ========================================================================== */
 
   if (document.readyState === 'loading') {
@@ -718,6 +848,4 @@
   } else {
     initObserver();
   }
-
-  console.log('[NT Assistant] Skript připraven pro hru The Fifth Step.');
 })();
