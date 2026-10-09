@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
-// @namespace    https://github.com/username/ntathome-assistant
+// @namespace    https://github.com/Maaniaaa/ntathome-assistant
 // @version      1.1.0
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): externí české titulky, automatické pauzy pro shrnutí děje a slovní zásobu pro Kiwi Browser a desktop. Primárně nastaveno pro hru The Fifth Step.
 // @author       NT Assistant Team
 // @match        https://www.ntathome.com/*
-// @updateURL    https://raw.githubusercontent.com/username/ntathome-assistant/main/ntathome-assistant.user.js
-// @downloadURL  https://raw.githubusercontent.com/username/ntathome-assistant/main/ntathome-assistant.user.js
+// @updateURL    https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
+// @downloadURL  https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/ntathome-assistant.user.js
 // @grant        none
 // @run-at       document-idle
 // ==/UserScript==
@@ -29,7 +29,7 @@
     // 🎭 PRIMÁRNÍ HRA: THE FIFTH STEP (David Ireland, National Theatre at Home)
     'the-fifth-step': {
       title: 'The Fifth Step',
-      subtitlesUrl: 'https://raw.githubusercontent.com/username/ntathome-subtitles/main/the_fifth_step_cs.vtt',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Fifth_Step.cs.vtt',
       checkpoints: [
         {
           id: 'the-fifth-step-cp-1',
