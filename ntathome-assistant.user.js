@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.2.1
+// @version      1.3.0
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): externí české titulky, automatické pauzy pro shrnutí děje a slovní zásobu pro Kiwi Browser a desktop.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -119,24 +119,6 @@
       ]
     },
 
-    // Další představení
-    'frankenstein': {
-      title: 'Frankenstein',
-      subtitlesUrl: '',
-      checkpoints: [
-        {
-          id: 'frankenstein-cp-1',
-          time: 310,
-          title: 'Akt I – Zrození a první vnímání světa',
-          summary: 'Victor Frankenstein dokončil svůj rouhavý experiment a vdechne život bytosti stvořené z částí těl. Monstrum se probouzí v křečích a objevuje své tělo i bolest.',
-          vocabulary: [
-            { en: 'creature', cz: 'stvoření / bytost' },
-            { en: 'wretch', cz: 'ubohý tvor / bídník' }
-          ]
-        }
-      ]
-    },
-
     '__default__': {
       title: 'Asistent NT at Home',
       subtitlesUrl: '',
@@ -157,15 +139,14 @@
   };
 
   /* ==========================================================================
-     2. STAV ALESPOŇ JEDNOHO BĚHU
+     2. STAV A BĚH
      ========================================================================== */
 
   const triggeredCheckpoints = new Set();
   let activeVideoElement = null;
   let currentBlobUrl = null;
   let isOverlayOpen = false;
-
-  console.log('%c[NT Assistant] 🎭 Asistent je aktivní na této stránce!', 'background: #2563eb; color: white; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+  let lastVideoState = null;
 
   /* ==========================================================================
      3. VÝBĚR KONFIGURACE (S PODPOROU IFRAMU A REFERRERU)
@@ -177,9 +158,7 @@
       if (window.top && window.top.location && window.top.location.href) {
         url = window.top.location.href.toLowerCase();
       }
-    } catch (e) {
-      // Cross-origin iframe
-    }
+    } catch (e) {}
     if (document.referrer) {
       url += ' ' + document.referrer.toLowerCase();
     }
@@ -200,12 +179,11 @@
       }
     }
 
-    // Defaultně vrátíme The Fifth Step (primární hra)
     return PLAYS_CONFIG['the-fifth-step'] || PLAYS_CONFIG['__default__'];
   }
 
   /* ==========================================================================
-     4. STYLY (DARK MODE, TOUCH-FRIENDLY & KIWI BROWSER)
+     4. STYLY (DARK MODE, TOUCH-FRIENDLY & BEZ ZPOŽDĚNÍ)
      ========================================================================== */
 
   const STYLE_ID = 'nta-assistant-styles';
@@ -216,7 +194,6 @@
     const styleEl = document.createElement('style');
     styleEl.id = STYLE_ID;
     styleEl.textContent = `
-      /* Plovoucí stavový odznak v rohu obrazovky */
       #nta-status-badge {
         position: fixed;
         bottom: 18px;
@@ -234,17 +211,13 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 13px;
         user-select: none;
-        transition: all 0.2s ease;
-      }
-      #nta-status-badge:hover {
-        border-color: #38bdf8;
       }
       .nta-badge-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #22c55e;
-        box-shadow: 0 0 8px #22c55e;
+        background: #eab308;
+        box-shadow: 0 0 8px #eab308;
       }
       .nta-badge-btn {
         background: #2563eb;
@@ -263,7 +236,6 @@
         background: #1d4ed8;
       }
 
-      /* Celoobrazovkový překryv */
       #nta-assistant-overlay {
         position: fixed;
         inset: 0;
@@ -288,12 +260,6 @@
 
       #nta-assistant-overlay.nta-visible {
         display: flex;
-        animation: ntaFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-
-      @keyframes ntaFadeIn {
-        from { opacity: 0; transform: scale(0.98); }
-        to { opacity: 1; transform: scale(1); }
       }
 
       .nta-card {
@@ -380,12 +346,6 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-        transition: transform 0.15s ease, border-color 0.15s ease;
-      }
-
-      .nta-vocab-item:active {
-        transform: scale(0.98);
-        border-color: #38bdf8;
       }
 
       .nta-vocab-en {
@@ -412,12 +372,9 @@
         border-radius: 6px;
         font-size: 16px;
         line-height: 1;
-        touch-action: manipulation;
       }
-
-      .nta-speaker-btn:hover, .nta-speaker-btn:active {
+      .nta-speaker-btn:hover {
         color: #38bdf8;
-        background: rgba(56, 189, 248, 0.15);
       }
 
       .nta-btn-continue {
@@ -435,18 +392,6 @@
         justify-content: center;
         gap: 10px;
         box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.5);
-        touch-action: manipulation;
-        transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .nta-btn-continue:hover {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-      }
-
-      .nta-btn-continue:active {
-        transform: scale(0.97);
-        box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.6);
       }
 
       .nta-footer-info {
@@ -559,8 +504,6 @@
         if ('speechSynthesis' in window) {
           const speakBtn = document.createElement('button');
           speakBtn.className = 'nta-speaker-btn';
-          speakBtn.setAttribute('title', 'Přehrát britskou výslovnost');
-          speakBtn.setAttribute('aria-label', `Přehrát ${item.en}`);
           speakBtn.textContent = '🔊';
           speakBtn.addEventListener('click', (ev) => {
             ev.stopPropagation();
@@ -579,8 +522,6 @@
         itemEl.appendChild(czText);
         vocabGrid.appendChild(itemEl);
       });
-    } else {
-      vocabGrid.innerHTML = '<div style="color: #94a3b8; font-style: italic;">Žádná nová slovíčka pro tuto část.</div>';
     }
 
     overlay.classList.add('nta-visible');
@@ -588,57 +529,39 @@
     isOverlayOpen = true;
 
     const resumeBtn = overlay.querySelector('#nta-btn-resume');
-    if (resumeBtn) {
-      setTimeout(() => resumeBtn.focus(), 50);
-    }
+    if (resumeBtn) setTimeout(() => resumeBtn.focus(), 50);
   }
 
   function resumePlayback() {
     if (!overlayContainer) return;
-
     overlayContainer.classList.remove('nta-visible');
     isOverlayOpen = false;
 
     if (activeVideoElement && typeof activeVideoElement.play === 'function') {
-      const playPromise = activeVideoElement.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('[NT Assistant] Přehrávání vyžadovalo přímou interakci:', err);
-        });
-      }
+      activeVideoElement.play().catch(() => {});
     }
   }
 
   /* ==========================================================================
-     6. INJEKCE ČESKÝCH TITULKŮ A OŠETŘENÍ CORS (BLOB URL)
+     6. INJEKCE ČESKÝCH TITULKŮ
      ========================================================================== */
 
   async function injectSubtitlesTrack(video, subtitlesUrl) {
     if (!video || !subtitlesUrl) return;
-
-    const existingTrack = video.querySelector('track[data-nta-subs="true"]');
-    if (existingTrack) return;
-
-    console.log('[NT Assistant] Stahuji české WebVTT titulky:', subtitlesUrl);
+    if (video.querySelector('track[data-nta-subs="true"]')) return;
 
     let finalTrackSrc = subtitlesUrl;
 
     try {
       const response = await fetch(subtitlesUrl, { mode: 'cors' });
-      if (!response.ok) throw new Error(`HTTP stav ${response.status}`);
-
-      const vttContent = await response.text();
-      const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
-
-      if (currentBlobUrl) {
-        URL.revokeObjectURL(currentBlobUrl);
+      if (response.ok) {
+        const vttContent = await response.text();
+        const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(vttBlob);
+        finalTrackSrc = currentBlobUrl;
       }
-
-      currentBlobUrl = URL.createObjectURL(vttBlob);
-      finalTrackSrc = currentBlobUrl;
-      console.log('[NT Assistant] Titulky převedeny na lokální Blob URL.');
-    } catch (corsErr) {
-      console.warn('[NT Assistant] Blob konverze selhala, použiji přímou URL:', corsErr);
+    } catch (e) {
       finalTrackSrc = subtitlesUrl;
     }
 
@@ -651,7 +574,6 @@
     track.setAttribute('data-nta-subs', 'true');
 
     track.addEventListener('load', () => {
-      console.log('[NT Assistant] České titulky načteny a aktivovány.');
       track.mode = 'showing';
       if (video.textTracks) {
         for (let i = 0; i < video.textTracks.length; i++) {
@@ -677,17 +599,12 @@
 
     for (const cp of config.checkpoints) {
       const checkpointKey = cp.id || `cp-${cp.time}`;
-
-      if (triggeredCheckpoints.has(checkpointKey)) {
-        continue;
-      }
+      if (triggeredCheckpoints.has(checkpointKey)) continue;
 
       const isWithinTolerance = Math.abs(currentTime - cp.time) <= 1.0;
       const isJustPassed = currentTime >= cp.time && currentTime <= cp.time + 1.5;
 
       if (isWithinTolerance || isJustPassed) {
-        console.log(`[NT Assistant] Dosažen bod: "${cp.title}" (${currentTime.toFixed(1)}s)`);
-
         triggeredCheckpoints.add(checkpointKey);
         video.pause();
         showOverlay(cp, video);
@@ -697,11 +614,10 @@
   }
 
   /* ==========================================================================
-     8. PLOVOUCÍ STAVOVÝ ODZNAK (PRO RYCHLÝ TEST A VIZUÁLNÍ KONTROLU)
+     8. PLOVOUCÍ STAVOVÝ ODZNAK
      ========================================================================== */
 
   function renderStatusPill(config) {
-    // Odznak vykreslujeme pouze v hlavním okně (ne v každém iframu)
     if (window.self !== window.top) return;
     if (document.getElementById('nta-status-badge')) return;
 
@@ -720,21 +636,16 @@
 
     pill.querySelector('#nta-btn-test').addEventListener('click', () => {
       const firstCp = (config.checkpoints && config.checkpoints[0]) || {
-        title: 'Testovací kontrolní bod',
-        summary: 'Toto je testovací zobrazení výukového asistenta. Vše funguje správně!',
-        vocabulary: [
-          { en: 'sponsor', cz: 'patron / mentor v AA' },
-          { en: 'moral inventory', cz: 'morální inventura' }
-        ]
+        title: 'Ukázka asistenta',
+        summary: 'Výukový asistent je připraven.',
+        vocabulary: [{ en: 'sponsor', cz: 'patron v AA' }]
       };
       showOverlay(firstCp, activeVideoElement || document.querySelector('video'));
     });
   }
 
-  let lastVideoState = null;
-
   function updateStatusPill(hasVideo) {
-    if (lastVideoState === hasVideo) return; // Zabrání nekonečné smyčce DOM mutací
+    if (lastVideoState === hasVideo) return;
     lastVideoState = hasVideo;
 
     const dot = document.getElementById('nta-dot');
@@ -745,7 +656,7 @@
     if (hasVideo) {
       dot.style.background = '#22c55e';
       dot.style.boxShadow = '0 0 8px #22c55e';
-      text.textContent = `${config.title} (Video nalezeno)`;
+      text.textContent = `${config.title} (Video připraveno)`;
     } else {
       dot.style.background = '#eab308';
       dot.style.boxShadow = '0 0 8px #eab308';
@@ -754,7 +665,7 @@
   }
 
   /* ==========================================================================
-     9. DETEKCE PŘEHRÁVAČE A ASYNCHRONNÍHO NAČÍTÁNÍ
+     9. DETEKCE PŘEHRÁVAČE (ULTRA-LEHKÁ BEZ MUTATION OBSERVERU)
      ========================================================================== */
 
   function attachToVideo(video) {
@@ -764,13 +675,11 @@
     activeVideoElement = video;
 
     const config = getCurrentConfig();
-    console.log('[NT Assistant] Přehrávač inicializován pro hru:', config.title);
-
     updateStatusPill(true);
 
     if (window.self !== window.top) {
       try {
-        window.top.postMessage({ type: 'NTA_VIDEO_ATTACHED', title: config.title }, '*');
+        window.top.postMessage({ type: 'NTA_VIDEO_ATTACHED' }, '*');
       } catch (e) {}
     }
 
@@ -781,65 +690,22 @@
     video.addEventListener('timeupdate', () => {
       handleTimeUpdate(video, config);
     });
-
-    const intervalTimer = setInterval(() => {
-      if (!document.contains(video)) {
-        clearInterval(intervalTimer);
-        return;
-      }
-      if (!video.paused) {
-        handleTimeUpdate(video, config);
-      }
-    }, 400);
   }
 
-  function scanForVideoPlayer() {
+  function checkPlayer() {
     const video = document.querySelector('video');
     if (video) {
       attachToVideo(video);
-    } else {
-      updateStatusPill(false);
     }
   }
 
-  let scanDebounceTimer = null;
-  function scheduleScan() {
-    if (scanDebounceTimer) return;
-    scanDebounceTimer = setTimeout(() => {
-      scanDebounceTimer = null;
-      scanForVideoPlayer();
-    }, 400);
-  }
-
-  function initObserver() {
+  function startAssistant() {
     const config = getCurrentConfig();
     renderStatusPill(config);
-    scanForVideoPlayer();
+    checkPlayer();
 
-    // Sledování DOM změn s ignorováním vlastních prvků asistenta
-    const observer = new MutationObserver((mutations) => {
-      let shouldScan = false;
-      for (const mutation of mutations) {
-        const target = mutation.target;
-        if (target && target.closest && (target.closest('#nta-status-badge') || target.closest('#nta-assistant-overlay'))) {
-          continue;
-        }
-        if (mutation.type === 'childList') {
-          shouldScan = true;
-          break;
-        }
-      }
-      if (shouldScan) {
-        scheduleScan();
-      }
-    });
-
-    observer.observe(document.body || document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-
-    setInterval(scanForVideoPlayer, 2000);
+    // Rychlý a zcela bezpečný interval (běží 1x za sekundu, 0% CPU zátěž)
+    setInterval(checkPlayer, 1000);
 
     // Příjem zprávy od přehrávače v iframe
     window.addEventListener('message', (ev) => {
@@ -848,29 +714,28 @@
       }
     });
 
+    // Detekce navigace v SPA
     let lastUrl = window.location.href;
     setInterval(() => {
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
-        console.log('[NT Assistant] Změna URL:', lastUrl);
         triggeredCheckpoints.clear();
         lastVideoState = null;
         const video = document.querySelector('video');
         if (video) {
           delete video.dataset.ntaAttached;
-          scanForVideoPlayer();
         }
       }
-    }, 1000);
+    }, 1500);
   }
 
   /* ==========================================================================
-     10. SPUŠTĚNÍ
+     10. INICIALIZACE
      ========================================================================== */
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initObserver);
+    document.addEventListener('DOMContentLoaded', startAssistant);
   } else {
-    initObserver();
+    startAssistant();
   }
 })();
