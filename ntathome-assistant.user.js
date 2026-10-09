@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.2.0
+// @version      1.2.1
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): externí české titulky, automatické pauzy pro shrnutí děje a slovní zásobu pro Kiwi Browser a desktop.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -731,7 +731,12 @@
     });
   }
 
+  let lastVideoState = null;
+
   function updateStatusPill(hasVideo) {
+    if (lastVideoState === hasVideo) return; // Zabrání nekonečné smyčce DOM mutací
+    lastVideoState = hasVideo;
+
     const dot = document.getElementById('nta-dot');
     const text = document.getElementById('nta-pill-text');
     if (!dot || !text) return;
@@ -797,25 +802,44 @@
     }
   }
 
+  let scanDebounceTimer = null;
+  function scheduleScan() {
+    if (scanDebounceTimer) return;
+    scanDebounceTimer = setTimeout(() => {
+      scanDebounceTimer = null;
+      scanForVideoPlayer();
+    }, 400);
+  }
+
   function initObserver() {
     const config = getCurrentConfig();
     renderStatusPill(config);
     scanForVideoPlayer();
 
+    // Sledování DOM změn s ignorováním vlastních prvků asistenta
     const observer = new MutationObserver((mutations) => {
+      let shouldScan = false;
       for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          scanForVideoPlayer();
+        const target = mutation.target;
+        if (target && target.closest && (target.closest('#nta-status-badge') || target.closest('#nta-assistant-overlay'))) {
+          continue;
         }
+        if (mutation.type === 'childList') {
+          shouldScan = true;
+          break;
+        }
+      }
+      if (shouldScan) {
+        scheduleScan();
       }
     });
 
-    observer.observe(document.documentElement, {
+    observer.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true
     });
 
-    setInterval(scanForVideoPlayer, 1500);
+    setInterval(scanForVideoPlayer, 2000);
 
     // Příjem zprávy od přehrávače v iframe
     window.addEventListener('message', (ev) => {
@@ -830,6 +854,7 @@
         lastUrl = window.location.href;
         console.log('[NT Assistant] Změna URL:', lastUrl);
         triggeredCheckpoints.clear();
+        lastVideoState = null;
         const video = document.querySelector('video');
         if (video) {
           delete video.dataset.ntaAttached;
