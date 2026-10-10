@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
+// @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.6.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): nastavitelná velikost a spolehlivé vypínání českých titulků, trvalá regulace rychlosti videa (0.85x, 0.9x), tlačítko pro zopakování sekce a bilingvní shrnutí děje.
+// @version      1.7.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step a The Importance of Being Earnest s českými titulky, bilingvními shrnutími scén, opakováním sekcí a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -21,7 +21,7 @@
   'use strict';
 
   /* ==========================================================================
-     1. PŘEHLED HER A DATOVÁ STRUKTURA (THE FIFTH STEP)
+     1. PŘEHLED HER A DATOVÁ STRUKTURA
      ========================================================================== */
 
   const AVAILABLE_PLAYS = [
@@ -32,6 +32,15 @@
       cast: 'Jack Lowden, Martin Compston',
       url: 'https://ntathome.com/the-fifth-step/videos/the-fifth-step-full-play',
       badge: 'Připraveno (6 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'the-importance-of-being-earnest',
+      title: 'The Importance of Being Earnest',
+      author: 'Oscar Wilde',
+      cast: 'Sharon D Clarke, Ncuti Gatwa, Hugh Skinner',
+      url: 'https://ntathome.com/the-importance-of-being-earnest/videos/the-importance-of-being-earnest-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
       isReady: true
     }
   ];
@@ -143,6 +152,99 @@
       ]
     },
 
+    // 🎭 THE IMPORTANCE OF BEING EARNEST (JAK JE DŮLEŽITÉ MÍTI FILIPA)
+    'the-importance-of-being-earnest': {
+      title: 'The Importance of Being Earnest',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Importance_of_Being_Earnest.cs.vtt',
+      checkpoints: [
+        {
+          id: 'earnest-cp-1',
+          startTime: 0,
+          time: 1180, // ~19:40
+          title: '1. Dějství: Tabatěrka a fenomén Bunburyismu',
+          summaryCz: 'Algernon Moncrieff hostí ve svém londýnském bytě přítele Jacka Worthinga (v Londýně vystupujícího pod jménem Ernest). Jack přijíždí požádat o ruku Algernonovu sestřenici Gwendolen. Algernon však odmítá dát souhlas, dokud Jack nevysvětlí nápis na své zapomenuté tabatěrce věnované „strýčku Jackovi od malé Cecily“. Jack je nucen přiznat pravdu: na venkově je vážným poručníkem Jackem a v Londýně předstírá, že má hříšného bratra Ernesta, aby mohl utíkat za zábavou. Algernon s nadšením konstatuje, že Jack je stejně jako on nevyléčitelný „Bunburyista“ – Algernon si totiž vymyslel fiktivního nemocného přítele Bunburyho, který mu slouží jako dokonalá výmluva k únikům z nudných společenských povinností.',
+          summaryEn: 'Algernon Moncrieff entertains his friend Jack Worthing (who goes by the name Ernest in town) at his London flat. Jack has come to propose to Algernon\'s cousin, Gwendolen Fairfax. However, Algernon refuses to give his consent until Jack explains an inscription on a cigarette case he left behind: "From little Cecily, with her fondest love to her dear Uncle Jack." Jack is forced to confess his double life: in the country he is the respectable guardian Jack, while in London he pretends to have a reckless younger brother named Ernest so he can escape social responsibilities. Algernon gleefully identifies Jack as a fellow "Bunburyist" – Algernon having invented an invalid friend named Bunbury to escape tedious social obligations.',
+          vocabulary: [
+            { en: 'Bunburyist / Bunburying', cz: 'Bunburyista / bunburyismus (vymýšlení si falešných záminek k úniku před povinnostmi)' },
+            { en: 'cigarette case', cz: 'tabatěrka / pouzdro na cigarety' },
+            { en: 'guardian', cz: 'poručník / zákonný zástupce' },
+            { en: 'ward', cz: 'svěřenka / schovanka v poručnické péči (Cecily)' },
+            { en: 'scrape / scrape into', cz: 'šlamastyka / malér' },
+            { en: 'invalid', cz: 'nemocný / lazar / invalida (fiktivní přítel Bunbury)' },
+            { en: 'cynical', cz: 'cynický / bezohledně kousavý' }
+          ]
+        },
+        {
+          id: 'earnest-cp-2',
+          startTime: 1180,
+          time: 2680, // ~44:40
+          title: '2. Dějství: Žádost o ruku a kabelka na nádraží Victoria',
+          summaryCz: 'Přichází Gwendolen se svou autoritativní matkou, lady Bracknellovou. Zatímco Algernon odvádí tetu do vedlejšího pokoje, Jack vyznává Gwendolen lásku a žádá ji o ruku. Gwendolen nabídku nadšeně přijímá, ovšem zdůrazňuje, že jejím celoživotním snem bylo milovat muže se vznešeným a inspirativním jménem Ernest. Lady Bracknellová se vrací a podrobuje Jacka nesmiřitelnému výslechu o jeho financích, majetku a rodinném původu. Když Jack přizná, že nezná své rodiče, protože byl jako novorozeně nalezen v černé kožené cestovní kabelce v úschovně zavazadel na nádraží Victoria, lady Bracknellová je pobouřena a sňatek kategoricky zakáže, dokud si nenajde nějaké příbuzné.',
+          summaryEn: 'Gwendolen arrives with her formidable mother, Lady Bracknell. While Algernon distracts his aunt in the music room, Jack confesses his love to Gwendolen and proposes. She enthusiastically accepts, confessing that it has always been her ideal to love someone of the name Ernest, as it inspires absolute confidence. Lady Bracknell returns, dismisses Gwendolen, and subjects Jack to an exhaustive interrogation regarding his income, politics, and family lineage. When Jack reveals he has no known parents and was found as a newborn in a black handbag in the cloakroom at Victoria Station (Brighton line), Lady Bracknell is outraged, declaring that marrying into a cloakroom is out of the question.',
+          vocabulary: [
+            { en: 'handbag', cz: 'cestovní taška / kabelka' },
+            { en: 'cloak-room', cz: 'úschovna zavazadel / šatna na nádraží' },
+            { en: 'lineage / pedigree', cz: 'rodokmen / urozený původ' },
+            { en: 'indomitable', cz: 'nezdolný / neústupný' },
+            { en: 'alliance', cz: 'sňatek / rodinné spojenectví' },
+            { en: 'parcel', cz: 'balíček / zavazadlo' },
+            { en: 'absurdity', cz: 'absurdita / nesmyslnost' }
+          ]
+        },
+        {
+          id: 'earnest-cp-3',
+          startTime: 2680,
+          time: 4500, // ~75:00
+          title: '3. Dějství: Venkovské sídlo a příjezd „hříšného bratra Ernesta“',
+          summaryCz: 'Děj se přesouvá do zahrady Jackova venkovského panství v Hertfordshire. Mladá Cecily se zde pod dohledem guvernantky slečny Prismové učí němčinu a politickou ekonomii a sní o Jackově tajemném, zlém bratrovi Ernestovi. Slečna Prismová flirtuje s místním ctihodným rektorem Chasublem a odchází s ním na procházku. Do sídla nečekaně přijíždí Algernon, který se vydává za neexistujícího bratra Ernesta. Cecily je okouzlena a Algernon se do ní okamžitě zamiluje. Oba mladí lidé propadají vzájemné náklonnosti.',
+          summaryEn: 'The scene shifts to the garden of Jack\'s country estate in Manor House, Woolton. Young Cecily is reluctant to study German and political economy with her governess, Miss Prism, daydreaming instead about Jack\'s wicked, mysterious brother Ernest. Miss Prism flirts with the local rector, Dr. Chasuble, and walks off into the grounds. Suddenly, Algernon arrives posing as the wicked brother Ernest. Cecily is instantly fascinated by his bad reputation, and Algernon is utterly smitten with her beauty and wit.',
+          vocabulary: [
+            { en: 'governess', cz: 'guvernantka / vychovatelka' },
+            { en: 'rector', cz: 'farář / rektor (dr. Chasuble)' },
+            { en: 'wicked / wickedness', cz: 'hříšný / zkažený / nezvedenost' },
+            { en: 'repentance', cz: 'pokání / lítost nad hříchy' },
+            { en: 'reformation', cz: 'napravení / polepšení se' },
+            { en: 'manor house', cz: 'panské sídlo / venkovský zámeček' },
+            { en: 'christening', cz: 'křtiny / křest' }
+          ]
+        },
+        {
+          id: 'earnest-cp-4',
+          startTime: 4500,
+          time: 6120, // ~102:00
+          title: '4. Dějství: Smutek, souboj u čaje a odhalení',
+          summaryCz: 'Jack se vrací na panství v hlubokém smutečním šatu s tvrzením, že jeho bratr Ernest v Paříži náhle zemřel na těžké nachlazení. Je šokován, když zjistí, že v domě vesele obědvá Algernon převlečený za Ernesta! Mezitím Algernon požádá Cecily o ruku a zjistí, že Cecily si jejich zasnoubení již před třemi měsíci zapsala do svého deníku. Na panství vzápětí dorazí i Gwendolen. Při odpoledním čaji dojde mezi Cecily a Gwendolen k břitké a zdvořilé slovní přestřelce, protože obě věří, že jsou zasnoubeny s „Ernestem Worthingem“. Když se oba muži objeví, vyjde pravda najevo: ani jeden z nich se ve skutečnosti nejmenuje Ernest! Dívky se urazí a odcházejí do domu, zatímco Jack a Algernon se dohadují nad muffiny.',
+          summaryEn: 'Jack returns home dressed in deep mourning clothes, announcing that his brother Ernest has died in Paris from a severe chill. His plan to kill off Ernest collapses when he finds Algernon staying at the house, masquerading as Ernest. Meanwhile, Algernon proposes to Cecily, who reveals that in her diary, they have already been engaged for months. Soon, Gwendolen arrives from London. During afternoon tea, Cecily and Gwendolen engage in a brilliantly polite verbal duel over who is truly engaged to "Ernest Worthing." When Jack and Algernon enter, the truth is exposed: neither man\'s real name is Ernest! The women retreat into the house in indignation, leaving Jack and Algernon quarrelling over tea muffins.',
+          vocabulary: [
+            { en: 'mourning', cz: 'smuteční šat / smutek' },
+            { en: 'diary', cz: 'deník (Cecilyina fiktivní romance)' },
+            { en: 'entanglement', cz: 'milostná zápletka / zapletení se' },
+            { en: 'deception', cz: 'klam / přetvářka / lest' },
+            { en: 'sugar tongs', cz: 'kleštičky na cukr' },
+            { en: 'muffins', cz: 'muffiny / čajové koláčky' },
+            { en: 'indignation', cz: 'rozhořčení / pobouření' }
+          ]
+        },
+        {
+          id: 'earnest-cp-5',
+          startTime: 6120,
+          time: 8900, // ~148:20
+          title: '5. Dějství: Záhada slečny Prismové a Jak je důležité míti Filipa',
+          summaryCz: 'Oba muži se domluví s dr. Chasublem, aby je ještě téhož odpoledne překřtil na Ernesta, čímž si udobří Cecily i Gwendolen. Vtom však na panství vtrhne lady Bracknellová pátrající po dceři. Algernon oznámí své zasnoubení s Cecily, a lady Bracknellová svolí, jakmile zjistí, že Cecily má obrovské jmění. Jack však jako poručník odmítá sňatek povolit, dokud lady Bracknellová nesvolí k jeho sňatku s Gwendolen. Nastává patová situace, kterou rozetne příchod slečny Prismové. Lady Bracknellová v ní pozná bývalou chůvu, která před 28 lety odešla s kočárkem a novorozencem lorda Bracknella a už se nevrátila. Slečna Prismová se s pláčem dozná k osudovému omylu: v roztržitosti vložila třísložkový sentimentální román do kočárku a dítě vložila do černé kabelky, kterou zapomněla na nádraží Victoria. Jack přinese onu kabelku a potvrdí se, že je starším bratrem Algernona! V armádních seznamech po svém otci, generálu Moncrieffovi, navíc zjistí, že jeho pravé křestní jméno po otci skutečně zní Ernest. Hra končí všeobecným usmířením, třemi zasnoubeními a Jackovým zjištěním, jak důležité je míti Filipa (být upřímný a jmenovat se Ernest).',
+          summaryEn: 'Jack and Algernon win back Cecily and Gwendolen by arranging with Dr. Chasuble to be rechristened "Ernest." Lady Bracknell arrives pursuing Gwendolen. She consents to Algernon\'s engagement to Cecily upon learning of Cecily\'s substantial fortune, but Jack, as guardian, refuses his consent unless Lady Bracknell allows him to marry Gwendolen. The standoff is shattered when Dr. Chasuble mentions Miss Prism. Lady Bracknell recognizes her as the nursery governess who disappeared 28 years ago with a baby boy. Miss Prism confesses that in a moment of mental distraction, she placed her three-volume manuscript in the pram and put the baby into a black leather handbag, which she left at Victoria Station. Jack fetches the handbag, proving he is that lost baby – and Algernon\'s elder brother! Checking the Army Lists for his father\'s name, Jack discovers his real christened name was indeed Ernest. The play concludes with three happy couples and Jack realizing the vital importance of being Earnest.',
+          vocabulary: [
+            { en: 'three-volume novel', cz: 'třísvazkový sentimentální román' },
+            { en: 'pram / perambulator', cz: 'kočárek pro miminko' },
+            { en: 'distraction of mind', cz: 'roztržitost / pomatení mysli' },
+            { en: 'army list', cz: 'armádní seznam důstojníků' },
+            { en: 'rechristened / baptized', cz: 'překřtěn / pokřtěn' },
+            { en: 'vital importance', cz: 'životní / zásadní důležitost' },
+            { en: 'earnest / Earnest', cz: 'upřímný, vážně smýšlející / jméno Ernest (slovní hříčka v názvu hry)' }
+          ]
+        }
+      ]
+    },
+
     '__default__': {
       title: 'The Fifth Step',
       subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Fifth_Step.cs.vtt',
@@ -159,6 +261,7 @@
   let currentBlobUrl = null;
   let isOverlayOpen = false;
   let isDrawerOpen = false;
+  let detectedPlayKey = null;
 
   // Uložené předvolby
   let czSubtitlesEnabled = localStorage.getItem('nta_subs_enabled') !== '0';
@@ -171,6 +274,24 @@
      ========================================================================== */
 
   function getCurrentConfig() {
+    if (detectedPlayKey && PLAYS_CONFIG[detectedPlayKey]) {
+      return PLAYS_CONFIG[detectedPlayKey];
+    }
+
+    const combinedUrl = [
+      window.location.href,
+      document.referrer || '',
+      document.title || ''
+    ].join(' ').toLowerCase();
+
+    if (combinedUrl.includes('earnest') || combinedUrl.includes('importance-of-being-earnest')) {
+      return PLAYS_CONFIG['the-importance-of-being-earnest'];
+    }
+
+    if (combinedUrl.includes('fifth-step') || combinedUrl.includes('the-fifth-step')) {
+      return PLAYS_CONFIG['the-fifth-step'];
+    }
+
     return PLAYS_CONFIG['the-fifth-step'];
   }
 
@@ -369,6 +490,11 @@
         gap: 4px;
         text-decoration: none;
         color: inherit;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+      .nta-play-item:hover {
+        border-color: #38bdf8;
+        background: #273549;
       }
       .nta-play-item-title {
         font-weight: 700;
@@ -710,7 +836,13 @@
 
   async function injectSubtitlesTrack(video, subtitlesUrl) {
     if (!video || !subtitlesUrl) return;
-    if (video.querySelector('track[data-nta-subs="true"]')) return;
+    const existingTrack = video.querySelector('track[data-nta-subs="true"]');
+    if (existingTrack && video.dataset.ntaSubsUrl === subtitlesUrl) return;
+
+    if (existingTrack) {
+      existingTrack.remove();
+    }
+    video.dataset.ntaSubsUrl = subtitlesUrl;
 
     let finalTrackSrc = subtitlesUrl;
 
@@ -1006,13 +1138,13 @@
     floatingWidgetEl.id = 'nta-floating-widget';
 
     const playsListHtml = AVAILABLE_PLAYS.map(p => `
-      <div class="nta-play-item">
+      <a class="nta-play-item" href="${p.url}">
         <div class="nta-play-item-title">
           <span>${p.title}</span>
           <span class="nta-play-item-badge">${p.badge}</span>
         </div>
         <div class="nta-play-item-cast">${p.cast} • ${p.author}</div>
-      </div>
+      </a>
     `).join('');
 
     floatingWidgetEl.innerHTML = `
@@ -1258,6 +1390,26 @@
       // Detekce přehrávače
       if (ev.data.type === 'NTA_VIDEO_ATTACHED') {
         updateStatusPill(true);
+        if (window.self === window.top) {
+          const curConfig = getCurrentConfig();
+          const key = curConfig && curConfig.title && curConfig.title.includes('Earnest') ? 'the-importance-of-being-earnest' : 'the-fifth-step';
+          broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
+          broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
+          broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: targetPlaybackRate });
+          broadcastToFrames({ type: 'NTA_SET_SUBTITLE_SIZE', size: currentSubtitleSize });
+        }
+      }
+
+      // Synchronizace vybrané hry do iframů
+      if (ev.data.type === 'NTA_SET_ACTIVE_PLAY') {
+        if (ev.data.playKey && PLAYS_CONFIG[ev.data.playKey]) {
+          detectedPlayKey = ev.data.playKey;
+          const cfg = PLAYS_CONFIG[detectedPlayKey];
+          const v = activeVideoElement || document.querySelector('video');
+          if (v && cfg.subtitlesUrl) {
+            injectSubtitlesTrack(v, cfg.subtitlesUrl);
+          }
+        }
       }
     });
   }
@@ -1272,15 +1424,28 @@
 
     setInterval(checkPlayer, 1000);
 
+    if (window.self === window.top) {
+      const broadcastPlayInfo = () => {
+        const curConfig = getCurrentConfig();
+        const key = curConfig && curConfig.title && curConfig.title.includes('Earnest') ? 'the-importance-of-being-earnest' : 'the-fifth-step';
+        broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
+      };
+      broadcastPlayInfo();
+      setInterval(broadcastPlayInfo, 3000);
+    }
+
     let lastUrl = window.location.href;
     setInterval(() => {
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
+        detectedPlayKey = null;
         triggeredCheckpoints.clear();
         const video = document.querySelector('video');
         if (video) {
           delete video.dataset.ntaAttached;
+          delete video.dataset.ntaSubsUrl;
         }
+        updateStatusPill(false);
       }
     }, 1500);
   }
