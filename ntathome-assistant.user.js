@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.7.1
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step a The Importance of Being Earnest s českými titulky, ochrana proti duplicitnímu vykreslování titulků, opakováním sekcí a trvalou regulací rychlosti videa.
+// @version      1.8.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest a Our Town s českými titulky, bilingvními shrnutími scén, opakováním sekcí a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -40,6 +40,15 @@
       author: 'Oscar Wilde',
       cast: 'Sharon D Clarke, Ncuti Gatwa, Hugh Skinner',
       url: 'https://ntathome.com/the-importance-of-being-earnest/videos/the-importance-of-being-earnest-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'our-town',
+      title: 'Our Town',
+      author: 'Thornton Wilder',
+      cast: 'Michael Sheen, Yasemin Özdemir, Peter Devlin',
+      url: 'https://www.ntathome.com/our-town/videos/our-town-full-play',
       badge: 'Připraveno (5 checkpointů, CZ titulky)',
       isReady: true
     }
@@ -245,9 +254,102 @@
       ]
     },
 
+    // 🎭 OUR TOWN (NAŠE MĚSTEČKO)
+    'our-town': {
+      title: 'Our Town',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Our_Town.cs.vtt',
+      checkpoints: [
+        {
+          id: 'our-town-cp-1',
+          startTime: 0,
+          time: 1590, // 26:30
+          title: '1. Dějství: Běžný den v Grover\'s Corners',
+          summaryCz: 'Režisér (Stage Manager) uvádí diváky do ospalého městečka Grover\'s Corners v New Hampshire na úsvitu 7. května 1901. Bez kulis a rekvizit líčí probouzející se obec: Dr. Gibbs se vrací domů po nočním porodu dvojčat, mlékař Howie Newsome rozváží mléko se svou starou kobylou Bessie a chlapec Joe Crowell doručuje ranní noviny. V sousedících domech Gibbsových a Webbových začíná běžný rodinný shon – matky chystají snídani a posílají děti (George a Rebeku Gibbsovy, Emily a Wallyho Webbovy) do školy. Pan Webb (vydavatel místních novin) a profesor Willard doplňují historický a demografický přehled městečka pro zvídavé diváky.',
+          summaryEn: 'The Stage Manager introduces the audience to the quiet town of Grover\'s Corners, New Hampshire, at dawn on May 7, 1901. On a bare stage without props, he evokes the awakening town: Dr. Gibbs returns home after delivering twin babies, milkman Howie Newsome delivers milk with his horse Bessie, and paperboy Joe Crowell delivers the morning Sentinel. Next door to each other, the Gibbs and Webb households start their daily morning routine – mothers preparing breakfast and sending the children (George & Rebecca Gibbs, Emily & Wally Webb) to school. Editor Webb and Professor Willard provide a geological and historical profile of the town in response to questions from the audience.',
+          vocabulary: [
+            { en: 'Stage Manager', cz: 'Režisér / průvodce dějem (vypravěč bez rekvizit)' },
+            { en: 'commencement', cz: 'maturita / promoce / slavnostní zakončení školy' },
+            { en: 'daily life', cz: 'každodenní / všední život' },
+            { en: 'vestiges', cz: 'pozůstatky / stopy (geologické vrstvy)' },
+            { en: 'anthropological', cz: 'antropologický (zkoumání lidské kultury)' },
+            { en: 'delivered twins', cz: 'odrodil dvojčata' },
+            { en: 'tombstone', cz: 'náhrobní kámen' }
+          ]
+        },
+        {
+          id: 'our-town-cp-2',
+          startTime: 1590,
+          time: 3200, // 53:20
+          title: '1. Dějství: Zkouška sboru a rozhovor u měsíce',
+          summaryCz: 'Odpoledne po škole se George a Emily potkávají na ulici a povídají si o studiu; Emily se doma svěřuje matce a ptá se, zda je hezká. Večer se místní ženy scházejí v kostele na zkoušce pěveckého sboru pod vedením varhaníka Simona Stimsona, který očividně bojuje s těžkým alkoholismem a vnitřním trápením. Mezitím si George a Emily povídají ze svých podkrovních oken při měsíčním svitu a George žádá Emily o pomoc s algebrou. Dr. Gibbs promlouvá k synovi o zodpovědnosti a pomoci matce se dřívím. Dámy se vracejí ze sboru za zvuku nočního klidu a Režisér uzavírá první dějství – „Všední život“.',
+          summaryEn: 'After school, George and Emily converse about homework and the future; Emily confides in her mother, asking if she is pretty enough to turn heads. That evening, the town choir rehearses hymns at the Congregational church under the direction of Simon Stimson, the talented church organist battling severe alcoholism and inner anguish. Meanwhile, George and Emily study by moonlight at their second-floor windows across the yard, talking about mathematics and astronomy. Dr. Gibbs gently scolds George for neglecting his chores to help his mother. The choir women walk home in the moonlight gossiping about Simon Stimson, and the Stage Manager brings the first act, "Daily Life", to a close.',
+          vocabulary: [
+            { en: 'choir practice', cz: 'zkouška pěveckého sboru' },
+            { en: 'organist', cz: 'varhaník' },
+            { en: 'moonlight', cz: 'měsíční svit' },
+            { en: 'algebra', cz: 'algebra / matematika' },
+            { en: 'chore / chop wood', cz: 'domácí práce / sekat dříví' },
+            { en: 'Blessed Be the Tie That Binds', cz: 'Budiž požehnán svazek lásky (ústřední křesťanský hymnus)' },
+            { en: 'gossip', cz: 'drby / klepy' }
+          ]
+        },
+        {
+          id: 'our-town-cp-3',
+          startTime: 3200,
+          time: 4635, // 1:17:15
+          title: '2. Dějství: Láska a manželství (Vzpomínka na lékárnu)',
+          summaryCz: 'Uplynuly 3 roky (červenec 1904). Režisér oznamuje začátek druhého dějství s názvem „Láska a manželství“. Je deštivé ráno svatebního dne George Gibbse a Emily Webbové. Režisér však vrací čas o rok zpět, aby divákům ukázal, jak jejich láska začala: Emily a George kráčejí po vyhlášení voleb ze školy a Emily Georgeovi upřímně vytkne, že od té doby, co je baseballovou hvězdou, zpychl a odcizil se kamarádům. Otřesený George ji pozve do Morganovy drogerie na jahodovou sodovku (strawberry phosphate). Při otevřeném rozhovoru si oba uvědomí, jak moc pro sebe znamenají, a George se rozhodne neodejít na zemědělskou univerzitu, aby neztratil svou životní lásku.',
+          summaryEn: 'Three years have passed (July 1904). The Stage Manager announces Act II, titled "Love and Marriage". It is the rainy morning of George and Emily\'s wedding day. Before the ceremony, the Stage Manager takes the audience back one year to show how their romance blossomed: walking home from school, Emily candidly confronts George, saying that baseball fame has made him conceited and distant. A humbled George invites her to Mr. Morgan\'s drugstore for strawberry phosphates. Over drinks, they pour their hearts out; George realizes how precious Emily is to him and resolves not to go away to agricultural college, choosing to remain in Grover\'s Corners by her side.',
+          vocabulary: [
+            { en: 'strawberry phosphate', cz: 'jahodová sodovka / limonáda' },
+            { en: 'conceited', cz: 'namyšlený / domýšlivý' },
+            { en: 'drugstore', cz: 'lékárna s občerstvením / drogerie' },
+            { en: 'agricultural college', cz: 'zemědělská vysoká škola' },
+            { en: 'fond of', cz: 'mít rád / chovat náklonnost k někomu' },
+            { en: 'high school commencement', cz: 'maturitní slavnost' },
+            { en: 'character', cz: 'morální charakter / povaha' }
+          ]
+        },
+        {
+          id: 'our-town-cp-4',
+          startTime: 4635,
+          time: 5525, // 1:32:05
+          title: '2. Dějství: Svatební panika a manželský slib',
+          summaryCz: 'Děj se vrací do svatebního dne v kostele. Těsně před začátkem obřadu padá na oba novomanžele tíseň z budoucnosti: George panikaří, že nechce zestárnout a převzít dospělé břemeno rodiny, a Emily v slzách prosí svého otce, aby ji odvedl pryč a nenechal vdávat. Rodiče oba mladé lidi s porozuměním uklidní a dodají jim odvahu. Režisér vystupuje v roli oddávajícího kněze a vysvětluje filozofii manželství v koloběhu přírody. George a Emily si vymění prstýnky, paní Soamesová hlasitě a dojatě opěvuje štěstí mladého páru a Režisér posílá diváky na dvacetiminutovou přestávku.',
+          summaryEn: 'The scene shifts back to the wedding ceremony at the church. Minutes before walking down the aisle, both young people experience an overwhelming wave of cold feet: George panics at the thought of growing old and taking on adult burdens, while Emily breaks down in tears and begs her father to take her away. Their parents patiently reassure and comfort them. The Stage Manager steps into the pulpit as the minister, musing on the eternal impulse of nature driving souls together. George and Emily exchange vows while Mrs. Soames weeps joyfully in the pews, and the Stage Manager dismisses the audience for a twenty-minute intermission.',
+          vocabulary: [
+            { en: 'wedding ceremony', cz: 'svatební obřad' },
+            { en: 'cold feet', cz: 'strach / panika před svatbou (dosl. studené nohy)' },
+            { en: 'aisle', cz: 'ulička v kostele' },
+            { en: 'minister / preacher', cz: 'oddávající kněz / kazatel' },
+            { en: 'vows', cz: 'manželské sliby' },
+            { en: 'intermission', cz: 'divadelní přestávka' },
+            { en: 'nature pushes and contrives', cz: 'příroda tlačí a strojí (koloběh života)' }
+          ]
+        },
+        {
+          id: 'our-town-cp-5',
+          startTime: 5525,
+          time: 7650, // 2:07:30
+          title: '3. Dějství: Hřbitov na kopci a „Sbohem, světe“',
+          summaryCz: 'Uplynulo 9 let (léto 1913). Třetí dějství se odehrává na hřbitově na kopci nad městem. Mezi náhrobky tiše sedí duše zemřelých – paní Gibbsová, Wally Webb, paní Soamesová a Simon Stimson. Přichází smuteční průvod s rakví mladé Emily, která zemřela při porodu druhého dítěte. Emily usedá mezi mrtvé, ale stále cítí silné pouto k pozemskému životu. Přes varování paní Gibbsové se rozhodne vrátit se na zemi a znovu prožít jeden obyčejný den – své 12. narozeniny. V minulosti však s hlubokou bolestí zjišťuje, že živí lidé žijí ve spěchu a slepotě a neuvědomují si zázrak a vzácnost každého přítomného okamžiku. Po slavném dojemném monologu („Sbohem, světe... maminko a tatínku... tikotu hodin...“) se vrací k mrtvým. George se zhroutí na její hrob v pláči. Režisér uzavírá hru pohledem na noční oblohu a přáním klidné noci.',
+          summaryEn: 'Nine years have passed (summer 1913). The third act takes place in the windy cemetery high on a hill above Grover\'s Corners. The spirits of the departed – Mrs. Gibbs, Wally Webb, Mrs. Soames, and Simon Stimson – sit quietly on chairs, gradually letting go of earthly passions. A funeral procession arrives: Emily has tragically died giving birth to her second child. Emily takes her seat among the dead, but is drawn back to the living world. Disregarding Mrs. Gibbs\'s warnings, she chooses to relive one ordinary day: her twelfth birthday. Reliving it, Emily is heartbroken by how rushed, blind, and unaware living humans are: "Do any human beings ever realize life while they live it – every, every minute?" She delivers her iconic farewell: "Goodbye, world. Goodbye, Grover\'s Corners... Mama and Papa. Goodbye to clocks ticking... Oh, earth, you\'re too wonderful for anybody to realize you." Returning to the graves, she watches George collapse in grief at her feet. The Stage Manager closes the play under the quiet stars, bidding everyone a peaceful good night.',
+          vocabulary: [
+            { en: 'cemetery / graveyard', cz: 'hřbitov' },
+            { en: 'childbirth', cz: 'porod dítěte' },
+            { en: 'funeral procession', cz: 'pohřební průvod' },
+            { en: 'relive', cz: 'znovu prožít (den z minulosti)' },
+            { en: 'realize life while living it', cz: 'vnímat / uvědomovat si život, dokud ho žijeme' },
+            { en: 'farewell', cz: 'rozloučení / sbohem' },
+            { en: 'eternity', cz: 'věčnost' }
+          ]
+        }
+      ]
+    },
+
     '__default__': {
-      title: 'The Fifth Step',
-      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Fifth_Step.cs.vtt',
+      title: 'Our Town',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Our_Town.cs.vtt',
       checkpoints: []
     }
   };
@@ -284,6 +386,10 @@
       document.title || ''
     ].join(' ').toLowerCase();
 
+    if (combinedUrl.includes('our-town') || combinedUrl.includes('our_town') || combinedUrl.includes('our town')) {
+      return PLAYS_CONFIG['our-town'];
+    }
+
     if (combinedUrl.includes('earnest') || combinedUrl.includes('importance-of-being-earnest')) {
       return PLAYS_CONFIG['the-importance-of-being-earnest'];
     }
@@ -292,7 +398,14 @@
       return PLAYS_CONFIG['the-fifth-step'];
     }
 
-    return PLAYS_CONFIG['the-fifth-step'];
+    return PLAYS_CONFIG['our-town'] || PLAYS_CONFIG['the-fifth-step'];
+  }
+
+  function getPlayKey(cfg) {
+    if (!cfg || !cfg.title) return 'our-town';
+    if (cfg.title.includes('Our Town')) return 'our-town';
+    if (cfg.title.includes('Earnest')) return 'the-importance-of-being-earnest';
+    return 'the-fifth-step';
   }
 
   /* ==========================================================================
@@ -1422,7 +1535,7 @@
         updateStatusPill(true);
         if (window.self === window.top) {
           const curConfig = getCurrentConfig();
-          const key = curConfig && curConfig.title && curConfig.title.includes('Earnest') ? 'the-importance-of-being-earnest' : 'the-fifth-step';
+          const key = getPlayKey(curConfig);
           broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
           broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
           broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: targetPlaybackRate });
@@ -1460,7 +1573,7 @@
       let lastBroadcastKey = null;
       const broadcastPlayInfo = () => {
         const curConfig = getCurrentConfig();
-        const key = curConfig && curConfig.title && curConfig.title.includes('Earnest') ? 'the-importance-of-being-earnest' : 'the-fifth-step';
+        const key = getPlayKey(curConfig);
         if (key !== lastBroadcastKey) {
           lastBroadcastKey = key;
           broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
