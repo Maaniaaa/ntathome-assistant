@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      2.0.0
+// @version      2.1.0
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -1023,17 +1023,33 @@
 
       .nta-drawer {
         position: absolute;
-        bottom: 50px;
+        bottom: 52px;
         right: 0;
-        width: 325px;
+        width: 350px;
+        max-height: min(85vh, 680px);
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85);
         padding: 16px;
         display: none;
         flex-direction: column;
         gap: 12px;
+        overflow-y: auto;
+        z-index: 2147483647;
+      }
+      .nta-drawer::-webkit-scrollbar {
+        width: 6px;
+      }
+      .nta-drawer::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.6);
+      }
+      .nta-drawer::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 3px;
+      }
+      .nta-drawer::-webkit-scrollbar-thumb:hover {
+        background: #475569;
       }
       .nta-drawer.nta-open {
         display: flex;
@@ -1042,6 +1058,22 @@
       @keyframes ntaDrawerIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      .nta-plays-list {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        max-height: 250px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .nta-plays-list::-webkit-scrollbar {
+        width: 5px;
+      }
+      .nta-plays-list::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 3px;
       }
 
       .nta-drawer-header {
@@ -1113,17 +1145,23 @@
         background: #1e293b;
         border: 1px solid #334155;
         border-radius: 10px;
-        padding: 10px 12px;
+        padding: 9px 12px;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 3px;
         text-decoration: none;
         color: inherit;
-        transition: border-color 0.15s ease, background 0.15s ease;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
       }
       .nta-play-item:hover {
         border-color: #38bdf8;
         background: #273549;
+        transform: translateX(2px);
+      }
+      .nta-play-item-active {
+        border-color: #38bdf8 !important;
+        background: rgba(56, 189, 248, 0.12) !important;
       }
       .nta-play-item-title {
         font-weight: 700;
@@ -1140,6 +1178,10 @@
         color: #4ade80;
         padding: 2px 6px;
         border-radius: 4px;
+      }
+      .nta-play-item-badge.nta-badge-active {
+        background: rgba(56, 189, 248, 0.25);
+        color: #7dd3fc;
       }
       .nta-play-item-cast {
         font-size: 11px;
@@ -1804,15 +1846,19 @@
     floatingWidgetEl = document.createElement('div');
     floatingWidgetEl.id = 'nta-floating-widget';
 
-    const playsListHtml = AVAILABLE_PLAYS.map(p => `
-      <a class="nta-play-item" href="${p.url}">
-        <div class="nta-play-item-title">
-          <span>${p.title}</span>
-          <span class="nta-play-item-badge">${p.badge}</span>
-        </div>
-        <div class="nta-play-item-cast">${p.cast} • ${p.author}</div>
-      </a>
-    `).join('');
+    const currentPlayKey = getPlayKey(config);
+    const playsListHtml = AVAILABLE_PLAYS.map(p => {
+      const isCurrent = p.key === currentPlayKey;
+      return `
+        <a class="nta-play-item ${isCurrent ? 'nta-play-item-active' : ''}" href="${p.url}" target="_top" title="Kliknutím přejdete na hru: ${p.title}">
+          <div class="nta-play-item-title">
+            <span>${p.title} ${isCurrent ? '★' : ''}</span>
+            <span class="nta-play-item-badge ${isCurrent ? 'nta-badge-active' : ''}">${isCurrent ? 'Právě hraje' : p.badge}</span>
+          </div>
+          <div class="nta-play-item-cast">${p.cast} • ${p.author}</div>
+        </a>
+      `;
+    }).join('');
 
     floatingWidgetEl.innerHTML = `
       <div class="nta-drawer" id="nta-drawer">
@@ -1894,6 +1940,17 @@
 
     floatingWidgetEl.querySelector('#nta-btn-toggle-subs').addEventListener('click', toggleSubtitles);
     floatingWidgetEl.querySelector('#nta-btn-toggle-checkpoints').addEventListener('click', toggleCheckpoints);
+
+    // Přímé prokliknutí na hry v katalogu
+    floatingWidgetEl.querySelectorAll('.nta-play-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const href = item.getAttribute('href');
+        if (href) {
+          e.preventDefault();
+          window.top.location.href = href;
+        }
+      });
+    });
 
     floatingWidgetEl.querySelectorAll('#nta-size-btns .nta-group-btn').forEach(btn => {
       btn.addEventListener('click', () => {
