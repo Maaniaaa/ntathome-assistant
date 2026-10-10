@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.8.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest a Our Town s českými titulky, bilingvními shrnutími scén, opakováním sekcí a trvalou regulací rychlosti videa.
+// @version      1.9.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town a The Seagull s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -49,6 +49,15 @@
       author: 'Thornton Wilder',
       cast: 'Michael Sheen, Yasemin Özdemir, Peter Devlin',
       url: 'https://www.ntathome.com/our-town/videos/our-town-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'the-seagull',
+      title: 'The Seagull',
+      author: 'Anton Chekhov (Anya Reiss)',
+      cast: 'Emilia Clarke, Tom Rhys Harries, Indira Varma, Daniel Monks',
+      url: 'https://www.ntathome.com/videos/the-seagull-full-play',
       badge: 'Připraveno (5 checkpointů, CZ titulky)',
       isReady: true
     }
@@ -347,6 +356,99 @@
       ]
     },
 
+    // 🎭 THE SEAGULL (RACEK)
+    'the-seagull': {
+      title: 'The Seagull',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Seagull.cs.vtt',
+      checkpoints: [
+        {
+          id: 'the-seagull-cp-1',
+          startTime: 0,
+          time: 1770, // 29:30
+          title: '1. Dějství: Divadlo u jezera a konflikt s matkou',
+          summaryCz: 'Na venkovském statku Petra Sorina u jezera chystá mladý Konstantin Treplev (Kostya) představení své experimentální hry pod širým nebem. Konstantin touží po nových uměleckých formách a trpí ve stínu své matky, slavné a marnivé herečky Iriny Arkadinové. Masha, dcera správce statku, odmítá učitele Medvedenka a utápí se v neopětované lásce ke Konstantinovi. Přichází sousedka Nina Zarečná, do které je Konstantin bezhlavě zamilovaný, a ujímá se jediné role ve hře. Když hra začne s mystickým monologem o duchu světa („Lidé, lvi, orli a koroptve...“), Arkadina ji nahlas zesměšní jako dekadentní nesmysl. Hluboce raněný Konstantin představení ve vzteku ukončí a uteče. Doktor Dorn jako jediný oceňuje jeho upřímné hledání nových forem.',
+          summaryEn: 'On the country estate of Pyotr Sorin beside a lake, young Konstantin Treplev (Kostya) prepares an outdoor staging of his experimental avant-garde play. Konstantin yearns for innovative artistic forms and despises conventional theatre, living in the shadow of his famous, vain actress mother, Irina Arkadina. Masha, the estate bailiff\'s daughter, dresses in black mourning for her life and rebuffs the schoolmaster Medvedenko out of unrequited love for Konstantin. Nina Zarechnaya, the lovely neighbor girl whom Konstantin adores, arrives to perform the play\'s mystical monologue ("Men, lions, eagles and partridges..."). When Arkadina loudly mocks the production as decadent nonsense, a devastated Konstantin halts the performance in fury and storms off. Only Dr. Dorn perceives genuine talent and passion in Konstantin\'s artistic search.',
+          vocabulary: [
+            { en: 'new forms', cz: 'nové (umělecké) formy' },
+            { en: 'decadent', cz: 'dekadentní / úpadkový' },
+            { en: 'mourning for my life', cz: 'držet smutek za svůj život (slavná Mashina hláška)' },
+            { en: 'avant-garde', cz: 'avantgardní / průkopnický' },
+            { en: 'estate', cz: 'venkovské sídlo / statek' },
+            { en: 'unrequited love', cz: 'neopětovaná láska' },
+            { en: 'patronizing', cz: 'povýšený / blahosklonný' }
+          ]
+        },
+        {
+          id: 'the-seagull-cp-2',
+          startTime: 1770,
+          time: 3180, // 53:00
+          title: '2. Dějství: Zastřelený racek a posedlost psaním',
+          summaryCz: 'Na trávníku statku tráví společnost letní odpoledne. Nina je fascinována slavným spisovatelem Borisem Trigorinem (Arkadininým milencem), což v Konstantinovi vyvolává sžíravou žárlivost a zoufalství. Konstantin přináší mrtvého racka, kterého právě u jezera zastřelil, pokládá ho k Nininým nohám a varuje ji, že brzy zabije stejným způsobem sám sebe. Nina jeho gestu nerozumí a odtahuje se. Když Konstantin odejde, Nina zůstává o samotě s Trigorinem. Trigorin jí v upřímné zpovědi odhaluje tíživou posedlost a prokletí spisovatelského řemesla – neschopnost prostě žít, neustálou nutkavou potřebu vše pozorovat a přetvářet v text. Když spatří zastřeleného racka, napadne ho námět na povídku: dívka, která žije svobodně u jezera jako racek, dokud nepřijde muž a jen tak z nudy ji nezničí.',
+          summaryEn: 'On the estate lawn, Arkadina, Dorn, Masha, and Nina pass a warm afternoon. Nina is spellbound by the presence of famous author Boris Trigorin (Arkadina\'s lover), inflaming Konstantin\'s agony and jealousy. Konstantin abruptly approaches carrying a dead seagull he just shot by the lake, laying it at Nina\'s feet and declaring that he will soon end his own life the same way. Bewildered and alienated, Nina rejects his dramatic posturing. As Konstantin retreats, Nina converses alone with Trigorin. In a profound monologue, Trigorin describes the obsessive burden of the writer: the relentless compulsion to dissect and record every feeling, never allowing him to simply enjoy life. Noticing the dead bird, Trigorin jots down an idea: a subject for a short story about a free girl living beside a lake like a seagull, until a man happens by and casually destroys her.',
+          vocabulary: [
+            { en: 'seagull', cz: 'racek (ústřední symbol zmařeného života)' },
+            { en: 'subject for a short story', cz: 'námět na povídku' },
+            { en: 'compulsion', cz: 'vnitřní nutkání / neodbytná posedlost' },
+            { en: 'jealousy', cz: 'žárlivost' },
+            { en: 'taxidermy / stuffed bird', cz: 'vycpávání zvířat / vycpaný pták' },
+            { en: 'fame / celebrity', cz: 'sláva / celebrita' },
+            { en: 'destroy for sport', cz: 'zničit jen tak z rozmaru / pro zábavu' }
+          ]
+        },
+        {
+          id: 'the-seagull-cp-3',
+          startTime: 3180,
+          time: 5130, // 1:25:30
+          title: '3. Dějství: Výměna obvazů a tajný slib',
+          summaryCz: 'V jídelně statku se připravuje odjezd Arkadinové a Trigorina. Konstantin se pokusil zastřelit, ale kulka mu pouze škrábla lebku; navíc vyzval Trigorina na souboj. Nastává stěžejní scéna, kdy Arkadina vyměňuje obvaz na synově hlavě: chvíle hluboké mateřské a synovské něhy se však během okamžiku zvrhne v divokou hádku plnou výčitek, lakoty a urážek jeho talentu. Oba nakonec v slzách končí v objetí. Mezitím Trigorin Arkadinové přizná, že propadl kouzlu mladé Niny a chce zůstat. Arkadina klesá na kolena a vášnivým lichocením a citovým vydíráním Trigorina zmanipuluje, aby zůstal s ní. Těsně před odjezdem se však Trigorin tajně setkává s Ninou: Nina mu oznamuje, že utíká od rodičů do Moskvy k divadlu. Sdílejí vášnivý polibek a slibují si tajné setkání v hotelu Slovanský bazar.',
+          summaryEn: 'In the dining room, Arkadina and Trigorin prepare to leave. Following a failed suicide attempt in which Konstantin grazed his scalp with a bullet, he has challenged Trigorin to a duel. A tempestuous scene unfolds between mother and son as Arkadina dresses Konstantin\'s head wound: tender intimacy instantly devolves into vicious mutual recriminations about his lack of talent and her artistic mediocrity, before dissolving into tears and reconciliation. Trigorin then confesses to Arkadina his passion for Nina and begs to be released. Desperate, Arkadina drops to her knees and showers him with shameless flattery and theatrical seduction until he capitulates. Just before their departure, Trigorin steals a private moment with Nina: she reveals she is running away to Moscow to pursue the stage. They exchange a passionate kiss and agree to meet in secret.',
+          vocabulary: [
+            { en: 'bandage', cz: 'obvaz na hlavě' },
+            { en: 'duel', cz: 'souboj' },
+            { en: 'flattery', cz: 'lichocení / podlézání' },
+            { en: 'capitulate / surrender', cz: 'kapitulovat / vzdát se' },
+            { en: 'mediocrity', cz: 'průměrnost / bezvýznamnost' },
+            { en: 'infatuation', cz: 'pobláznění / zaslepená zamilovanost' },
+            { en: 'rendezvous', cz: 'tajná schůzka / dostaveníčko' }
+          ]
+        },
+        {
+          id: 'the-seagull-cp-4',
+          startTime: 5130,
+          time: 6930, // 1:55:30
+          title: '4. Dějství: Dva roky poté (Zimní loto a vycpaný racek)',
+          summaryCz: 'Uplynuly dva roky. Je bouřlivý zimní večer v Sorinově pracovně, upravené na Konstantinovo spisovatelské zázemí. Sorinovo zdraví prudce upadá. Masha se z trucu a rezignace vdala za učitele Medvedenka, mají dítě, ale Masha stále bezvýchodně miluje Konstantina. Konstantin se stal publikovaným spisovatelem v metropolitních časopisech, avšak jeho práce mu nepřináší štěstí. Společnost hraje loto a probírá smutný osud Niny: její vztah s Trigorinem zkrachoval, společné dítě zemřelo, Trigorin ji opustil a vrátil se k Arkadinové. Nina nyní bez úspěchu hraje v provinčních kočovných divadlech. Shamrayev mimochodem ukazuje vycpaného racka, kterého dal na Trigorinův dřívější pokyn zhotovit, ale Trigorin si na svůj slib ani nevzpomíná. Hosté odcházejí na večeři a Konstantin zůstává u psacího stolu sám.',
+          summaryEn: 'Two years have elapsed. It is a stormy autumn/winter evening in Sorin\'s study, converted into Konstantin\'s writing den. Sorin\'s health is rapidly deteriorating. In hopeless resignation, Masha has married Medvedenko and had a child, yet remains consumed by love for Konstantin. Konstantin has achieved success as a published author in Petersburg journals, though his writing feels hollow and abstract. The family gathers around the table for a game of lotto, recounting Nina\'s tragic fate: seduced by Trigorin, she bore a child that died; Trigorin abandoned her to return to Arkadina, and Nina\'s acting career disintegrated into miserable provincial tours. Shamrayev brings in the taxidermied seagull that Trigorin requested two years ago, but Trigorin has entirely forgotten ever asking for it. The company drifts into the next room for supper, leaving Konstantin alone at his desk.',
+          vocabulary: [
+            { en: 'two years elapsed', cz: 'uplynuly dva roky' },
+            { en: 'lotto', cz: 'loto (stolní společenská hra)' },
+            { en: 'provincial theatre', cz: 'provinční / kočovné divadlo' },
+            { en: 'resignation', cz: 'rezignace / odevzdanost osudu' },
+            { en: 'taxidermy / stuffed gull', cz: 'vycpaný racek' },
+            { en: 'hollow success', cz: 'prázdný / hořký úspěch' },
+            { en: 'deteriorating health', cz: 'zhoršující se zdraví' }
+          ]
+        },
+        {
+          id: 'the-seagull-cp-5',
+          startTime: 6930,
+          time: 8195, // 2:16:35
+          title: '4. Dějství: Návrat Niny („Jsem racek“) a osudný výstřel',
+          summaryCz: 'Zatímco je dům prázdný, oknem z temné zahrady nečekaně vklouzne promrzlá a vyčerpaná Nina. V horečnatém, srdceryvném rozhovoru rekapituluje své utrpení, ztrátu dítěte i Trigorinovu zradu. V blouznění opakuje symbolický motiv: „Jsem racek... Ne, to není ono. Jsem herečka.“ Konstantin ji na kolenou prosí, aby zůstala, a nabízí jí celý svůj život. Nina však jeho nabídku odmítá; ví, že její cesta vede dál do chudého divadla v Jeleci. Dojatě ho obejme a mizí v deštivé noci. Konstantin po jejím odchodu pomalu a systematicky roztrhá všechny své rukopisy a v naprostém tichu opustí pokoj. Ostatní se vracejí k partii lota, když vtom z vedlejší místnosti zazní tlumený výstřel. Doktor Dorn jde situaci prověřit a odvádí Trigorina stranou se slavnou mrazivou větou: „Odvěďte odsud Irinu Nikolajevnu. Jde o to, že Konstantin Gavrilovič se zastřelil.“',
+          summaryEn: 'Left alone at his desk, Konstantin is startled as a soaking-wet, shivering Nina slips in through the French doors. In an agonizing, feverish reunion, she recounts her hardships, the loss of her baby, and Trigorin\'s cold rejection. In poetic dissociation, she whispers the famous refrain: "I am a seagull... No, that\'s not it. I am an actress." Konstantin desperately professes his undying love and implores her to stay with him forever. Though weeping, Nina refuses, embracing him in farewell before vanishing into the dark night toward a miserable provincial acting contract in Yelets. Shattered and bereft of hope, Konstantin silently and methodically shreds every one of his manuscripts, then steps into the adjoining room. The family returns to their lotto game until a muted gunshot echoes offstage. Dr. Dorn investigates and discreetly pulls Trigorin aside, whispering the play\'s chilling final line: "Get Irina Nikolayevna away from here. The fact is, Konstantin Gavrilovich has shot himself."',
+          vocabulary: [
+            { en: 'I am a seagull / I am an actress', cz: 'Jsem racek / Jsem herečka (slavný monolog Niny)' },
+            { en: 'dissociation / feverish', cz: 'blouznění / horečnatý stav' },
+            { en: 'tear up manuscripts', cz: 'roztrhat rukopisy' },
+            { en: 'gunshot offstage', cz: 'výstřel za scénou' },
+            { en: 'shot himself', cz: 'zastřelil se' },
+            { en: 'chill / freezing', cz: 'mrazivý závěr' },
+            { en: 'endurance / carry one\'s cross', cz: 'nést svůj kříž / schopnost vytrvat' }
+          ]
+        }
+      ]
+    },
+
     '__default__': {
       title: 'Our Town',
       subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Our_Town.cs.vtt',
@@ -367,6 +469,7 @@
 
   // Uložené předvolby
   let czSubtitlesEnabled = localStorage.getItem('nta_subs_enabled') !== '0';
+  let checkpointsEnabled = localStorage.getItem('nta_checkpoints_enabled') !== '0'; // Výchozí: Zapnuto
   let targetPlaybackRate = parseFloat(localStorage.getItem('nta_playback_rate') || '1.0');
   let currentSubtitleSize = localStorage.getItem('nta_sub_size') || '1.55rem'; // Výchozí: Velké (~25px)
   let activeSummaryLang = localStorage.getItem('nta_summary_lang') || 'cz';
@@ -386,6 +489,10 @@
       document.title || ''
     ].join(' ').toLowerCase();
 
+    if (combinedUrl.includes('seagull')) {
+      return PLAYS_CONFIG['the-seagull'];
+    }
+
     if (combinedUrl.includes('our-town') || combinedUrl.includes('our_town') || combinedUrl.includes('our town')) {
       return PLAYS_CONFIG['our-town'];
     }
@@ -398,11 +505,12 @@
       return PLAYS_CONFIG['the-fifth-step'];
     }
 
-    return PLAYS_CONFIG['our-town'] || PLAYS_CONFIG['the-fifth-step'];
+    return PLAYS_CONFIG['the-seagull'] || PLAYS_CONFIG['our-town'];
   }
 
   function getPlayKey(cfg) {
-    if (!cfg || !cfg.title) return 'our-town';
+    if (!cfg || !cfg.title) return 'the-seagull';
+    if (cfg.title.includes('Seagull')) return 'the-seagull';
     if (cfg.title.includes('Our Town')) return 'our-town';
     if (cfg.title.includes('Earnest')) return 'the-importance-of-being-earnest';
     return 'the-fifth-step';
@@ -924,6 +1032,14 @@
     updateDrawerUI();
   }
 
+  function toggleCheckpoints() {
+    checkpointsEnabled = !checkpointsEnabled;
+    localStorage.setItem('nta_checkpoints_enabled', checkpointsEnabled ? '1' : '0');
+
+    broadcastToFrames({ type: 'NTA_SET_CHECKPOINTS', enabled: checkpointsEnabled });
+    updateDrawerUI();
+  }
+
   function setSubtitleSize(size) {
     currentSubtitleSize = size;
     localStorage.setItem('nta_sub_size', size);
@@ -1238,7 +1354,7 @@
      ========================================================================= */
 
   function handleTimeUpdate(video, config) {
-    if (!config || !Array.isArray(config.checkpoints) || isOverlayOpen) return;
+    if (!checkpointsEnabled || !config || !Array.isArray(config.checkpoints) || isOverlayOpen) return;
 
     const currentTime = video.currentTime;
 
@@ -1305,6 +1421,14 @@
           </button>
         </div>
 
+        <!-- Výuková okna (pauzy) přepínač -->
+        <div class="nta-control-row">
+          <span>Výuková okna (pauzy):</span>
+          <button type="button" class="nta-btn-toggle" id="nta-btn-toggle-checkpoints">
+            ${checkpointsEnabled ? 'Zapnuto ✓' : 'Vypnuto ✕'}
+          </button>
+        </div>
+
         <!-- Velikost titulků -->
         <div class="nta-control-row">
           <span>Velikost titulků:</span>
@@ -1361,6 +1485,7 @@
     });
 
     floatingWidgetEl.querySelector('#nta-btn-toggle-subs').addEventListener('click', toggleSubtitles);
+    floatingWidgetEl.querySelector('#nta-btn-toggle-checkpoints').addEventListener('click', toggleCheckpoints);
 
     floatingWidgetEl.querySelectorAll('#nta-size-btns .nta-group-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1387,6 +1512,13 @@
     if (subsBtn) {
       subsBtn.textContent = czSubtitlesEnabled ? 'Zapnuto ✓' : 'Vypnuto ✕';
       subsBtn.classList.toggle('nta-off', !czSubtitlesEnabled);
+    }
+
+    // Výuková okna
+    const cpBtn = floatingWidgetEl.querySelector('#nta-btn-toggle-checkpoints');
+    if (cpBtn) {
+      cpBtn.textContent = checkpointsEnabled ? 'Zapnuto ✓' : 'Vypnuto ✕';
+      cpBtn.classList.toggle('nta-off', !checkpointsEnabled);
     }
 
     // Velikost
@@ -1499,6 +1631,12 @@
         broadcastToFrames(ev.data);
       }
 
+      // Výuková okna (checkpoints)
+      if (ev.data.type === 'NTA_SET_CHECKPOINTS') {
+        checkpointsEnabled = !!ev.data.enabled;
+        broadcastToFrames(ev.data);
+      }
+
       // Opakování sekce
       if (ev.data.type === 'NTA_REPLAY_SECTION') {
         if (ev.data.checkpointId) {
@@ -1538,6 +1676,7 @@
           const key = getPlayKey(curConfig);
           broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
           broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
+          broadcastToFrames({ type: 'NTA_SET_CHECKPOINTS', enabled: checkpointsEnabled });
           broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: targetPlaybackRate });
           broadcastToFrames({ type: 'NTA_SET_SUBTITLE_SIZE', size: currentSubtitleSize });
         }
