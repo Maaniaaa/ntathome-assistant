@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.4.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): bilingvní shrnutí děje (CZ/EN), možnost zopakování sekce, posun a vypínání titulků, katalog her a přizpůsobení rychlosti přehrávání.
+// @version      1.5.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): spolehlivé vypínání a posun titulků výše, regulace rychlosti videa, tlačítko pro zopakování sekce a bilingvní shrnutí děje.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -21,10 +21,9 @@
   'use strict';
 
   /* ==========================================================================
-     1. KATALOG PŘIPRAVENÝCH HER A DATOVÁ VRSTVA
+     1. PŘEHLED HER A DATOVÁ STRUKTURA (POUZE THE FIFTH STEP)
      ========================================================================== */
 
-  /** Seznam her dostupných s českými titulky pro zobrazení v přehledu */
   const AVAILABLE_PLAYS = [
     {
       key: 'the-fifth-step',
@@ -32,32 +31,13 @@
       author: 'David Ireland',
       cast: 'Jack Lowden, Martin Compston',
       url: 'https://ntathome.com/the-fifth-step/videos/the-fifth-step-full-play',
-      badge: 'Aktivní (6 checkpointů, CZ titulky)',
+      badge: 'Připraveno (6 checkpointů, CZ titulky)',
       isReady: true
-    },
-    {
-      key: 'frankenstein',
-      title: 'Frankenstein',
-      author: 'Nick Dear (Mary Shelley)',
-      cast: 'Benedict Cumberbatch, Jonny Lee Miller',
-      url: 'https://www.ntathome.com/media/frankenstein-cumberbatch-as-creature/',
-      badge: 'Připravuje se',
-      isReady: false
-    },
-    {
-      key: 'hamlet',
-      title: 'Hamlet',
-      author: 'William Shakespeare',
-      cast: 'Benedict Cumberbatch',
-      url: 'https://www.ntathome.com/media/hamlet/',
-      badge: 'Připravuje se',
-      isReady: false
     }
   ];
 
-  /** Konfigurace jednotlivých her a jejich kontrolních bodů */
   const PLAYS_CONFIG = {
-    // 🎭 PRIMÁRNÍ HRA: THE FIFTH STEP
+    // 🎭 THE FIFTH STEP
     'the-fifth-step': {
       title: 'The Fifth Step',
       subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Fifth_Step.cs.vtt',
@@ -164,36 +144,25 @@
     },
 
     '__default__': {
-      title: 'Asistent NT at Home',
-      subtitlesUrl: '',
-      checkpoints: [
-        {
-          id: 'demo-cp-1',
-          startTime: 0,
-          time: 30,
-          title: 'Ukázkový kontrolní bod',
-          summaryCz: 'Toto je ukázkový kontrolní bod. Asistent automaticky pozastavil video, abyste si mohli projít shrnutí děje a osvojit si klíčová slovíčka.',
-          summaryEn: 'This is a sample study checkpoint. The assistant automatically paused playback so you can review the plot summary and master key vocabulary.',
-          vocabulary: [
-            { en: 'soliloquy', cz: 'monolog / samomluva' },
-            { en: 'playwright', cz: 'dramatik' },
-            { en: 'foreshadowing', cz: 'předznamenání budoucího děje' }
-          ]
-        }
-      ]
+      title: 'The Fifth Step',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/The_Fifth_Step.cs.vtt',
+      checkpoints: []
     }
   };
 
   /* ==========================================================================
-     2. STAV A BĚH
+     2. STAV A PERZISTENCE
      ========================================================================== */
 
   const triggeredCheckpoints = new Set();
   let activeVideoElement = null;
   let currentBlobUrl = null;
   let isOverlayOpen = false;
-  let isBadgeExpanded = false;
+  let isDrawerOpen = false;
+
+  // Načtení uloženého nastavení z paměti
   let czSubtitlesEnabled = localStorage.getItem('nta_subs_enabled') !== '0';
+  let targetPlaybackRate = parseFloat(localStorage.getItem('nta_playback_rate') || '1.0');
   let activeSummaryLang = localStorage.getItem('nta_summary_lang') || 'cz';
 
   /* ==========================================================================
@@ -214,24 +183,27 @@
   }
 
   function getCurrentConfig() {
-    const combinedUrl = getPageUrlString();
-
-    if (combinedUrl.includes('the-fifth-step') || combinedUrl.includes('the_fifth_step') || combinedUrl.includes('fifth-step')) {
-      return PLAYS_CONFIG['the-fifth-step'];
-    }
-
-    for (const key of Object.keys(PLAYS_CONFIG)) {
-      if (key === '__default__' || key === 'the-fifth-step') continue;
-      if (combinedUrl.includes(key)) {
-        return PLAYS_CONFIG[key];
-      }
-    }
-
-    return PLAYS_CONFIG['the-fifth-step'] || PLAYS_CONFIG['__default__'];
+    return PLAYS_CONFIG['the-fifth-step'];
   }
 
   /* ==========================================================================
-     4. STYLY (TITULKY VÝŠE, DARK MODE, TOUCH-FRIENDLY & NOVÝ KATALOG)
+     4. MEZIRÁMCOVÁ KOMUNIKACE (POSTMESSAGE PROPOJENÍ S IFRAMEM PŘEHRÁVAČE)
+     ========================================================================== */
+
+  /** Rozešle zprávu do všech iframů na stránce */
+  function broadcastToFrames(msg) {
+    const iframes = document.querySelectorAll('iframe');
+    for (const f of iframes) {
+      try {
+        if (f.contentWindow) {
+          f.contentWindow.postMessage(msg, '*');
+        }
+      } catch (e) {}
+    }
+  }
+
+  /* ==========================================================================
+     5. STYLY (TITULKY VÝŠE, DESIGN PŘEHRÁVAČE, DARK MODE & DRAWER)
      ========================================================================== */
 
   const STYLE_ID = 'nta-assistant-styles';
@@ -243,23 +215,33 @@
     styleEl.id = STYLE_ID;
     styleEl.textContent = `
       /* =========================================================
-         POSUNUTÍ TITULKŮ VÝŠE & DESIGN TITULKŮ
+         POSUNUTÍ TITULKŮ VÝŠE & STYLING TEXTU
          ========================================================= */
       video::-webkit-media-text-track-display {
-        transform: translateY(-30px) !important; /* Posun titulků o 30px výše */
+        transform: translateY(-35px) !important; /* Posun titulků o 35px výše */
       }
       ::cue {
-        font-size: 1.15rem !important;
-        background-color: rgba(15, 23, 42, 0.88) !important;
+        font-size: 1.18rem !important;
+        background-color: rgba(15, 23, 42, 0.90) !important;
         color: #f8fafc !important;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
         line-height: 1.45 !important;
-        padding: 4px 12px !important;
+        padding: 5px 14px !important;
         border-radius: 6px !important;
       }
 
+      /* Úplné skrytí titulků při vypnutí */
+      .nta-hide-subs ::cue,
+      .nta-hide-subs video::cue,
+      .nta-hide-subs video::-webkit-media-text-track-display,
+      .nta-hide-subs video::-webkit-media-text-track-container {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+
       /* =========================================================
-         PLOVOUCÍ OVLÁDACÍ PRVEK ASISTENTA V PRAVÉM DOLNÍM ROHU
+         PLOVOUCÍ OVLÁDACÍ PANEL V PRAVÉM DOLNÍM ROHU
          ========================================================= */
       #nta-floating-widget {
         position: fixed;
@@ -271,7 +253,6 @@
         user-select: none;
       }
 
-      /* Kompaktní pilulka */
       .nta-pill-btn {
         background: #0f172a;
         color: #f8fafc;
@@ -302,7 +283,6 @@
         box-shadow: 0 0 8px #eab308;
       }
 
-      /* Rozbalovací panel se seznamem her a nastavením */
       .nta-drawer {
         position: absolute;
         bottom: 50px;
@@ -346,14 +326,13 @@
         font-size: 16px;
       }
 
-      /* Přepínač titulků a rychlosti */
       .nta-control-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         background: #1e293b;
         border-radius: 10px;
-        padding: 8px 12px;
+        padding: 9px 12px;
         font-size: 13px;
       }
       .nta-btn-toggle {
@@ -361,10 +340,11 @@
         color: white;
         border: none;
         border-radius: 20px;
-        padding: 4px 12px;
+        padding: 5px 14px;
         font-size: 12px;
         font-weight: 700;
         cursor: pointer;
+        transition: background 0.15s ease;
       }
       .nta-btn-toggle.nta-off {
         background: #475569;
@@ -380,9 +360,10 @@
         color: #e2e8f0;
         border: none;
         border-radius: 6px;
-        padding: 3px 7px;
+        padding: 4px 8px;
         font-size: 11px;
         cursor: pointer;
+        font-weight: 600;
       }
       .nta-speed-btn.nta-active {
         background: #38bdf8;
@@ -390,28 +371,16 @@
         font-weight: 800;
       }
 
-      /* Seznam připravených her */
-      .nta-plays-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 200px;
-        overflow-y: auto;
-      }
       .nta-play-item {
         background: #1e293b;
         border: 1px solid #334155;
         border-radius: 10px;
-        padding: 8px 10px;
+        padding: 10px 12px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
         text-decoration: none;
         color: inherit;
-        transition: border-color 0.15s ease;
-      }
-      .nta-play-item:hover {
-        border-color: #38bdf8;
       }
       .nta-play-item-title {
         font-weight: 700;
@@ -428,10 +397,6 @@
         color: #4ade80;
         padding: 2px 6px;
         border-radius: 4px;
-      }
-      .nta-play-item-badge.nta-badge-wait {
-        background: rgba(148, 163, 184, 0.2);
-        color: #94a3b8;
       }
       .nta-play-item-cast {
         font-size: 11px;
@@ -512,7 +477,6 @@
         color: #ffffff;
       }
 
-      /* Záložky pro přepínání jazyka shrnutí děje (CZ / EN) */
       .nta-summary-header {
         display: flex;
         align-items: center;
@@ -552,7 +516,6 @@
         color: #e2e8f0;
       }
 
-      /* Slovní zásoba */
       .nta-vocab-header {
         display: flex;
         align-items: center;
@@ -620,7 +583,6 @@
         color: #38bdf8;
       }
 
-      /* Dvě akční tlačítka: Pustit sekci znovu + Pokračovat */
       .nta-actions-row {
         display: flex;
         gap: 12px;
@@ -677,7 +639,102 @@
   }
 
   /* ==========================================================================
-     5. PŘEKRYVNÉ ROZHRANÍ (OVERLAY UI) S BILINGVNÍM TEXTEM A OPAKOVÁNÍM
+     6. OVLÁDÁNÍ TITULKŮ A RYCHLOSTI PŘEHRÁVÁNÍ (SYNCHRONIZACE MEZI OKNY)
+     ========================================================================== */
+
+  function applySubtitlesVisibility() {
+    injectStyles();
+
+    // 1. Globální CSS pravidlo v DOMu (okamžitě skryje veškerý text titulků)
+    if (czSubtitlesEnabled) {
+      document.documentElement.classList.remove('nta-hide-subs');
+      if (document.body) document.body.classList.remove('nta-hide-subs');
+    } else {
+      document.documentElement.classList.add('nta-hide-subs');
+      if (document.body) document.body.classList.add('nta-hide-subs');
+    }
+
+    // 2. Přepnutí stopy v přehrávači
+    if (activeVideoElement && activeVideoElement.textTracks) {
+      for (let i = 0; i < activeVideoElement.textTracks.length; i++) {
+        const t = activeVideoElement.textTracks[i];
+        if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
+          t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
+        }
+      }
+    }
+  }
+
+  function toggleSubtitles() {
+    czSubtitlesEnabled = !czSubtitlesEnabled;
+    localStorage.setItem('nta_subs_enabled', czSubtitlesEnabled ? '1' : '0');
+
+    // Aplikovat lokálně
+    applySubtitlesVisibility();
+
+    // Odeslat příkaz do všech iframů (pokud jsme v hlavním okně)
+    broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
+
+    // Aktualizovat vzhled tlačítka v menu
+    updateDrawerUI();
+  }
+
+  function setPlaybackRate(rate) {
+    targetPlaybackRate = rate;
+    localStorage.setItem('nta_playback_rate', rate.toString());
+
+    // Aplikovat lokálně
+    if (activeVideoElement) {
+      activeVideoElement.playbackRate = rate;
+    }
+
+    // Odeslat do iframů
+    broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: rate });
+
+    updateDrawerUI();
+  }
+
+  /* ==========================================================================
+     7. INJEKCE WEBVTT TITULKŮ DO PŘEHRÁVAČE
+     ========================================================================== */
+
+  async function injectSubtitlesTrack(video, subtitlesUrl) {
+    if (!video || !subtitlesUrl) return;
+    if (video.querySelector('track[data-nta-subs="true"]')) return;
+
+    let finalTrackSrc = subtitlesUrl;
+
+    try {
+      const response = await fetch(subtitlesUrl, { mode: 'cors' });
+      if (response.ok) {
+        const vttContent = await response.text();
+        const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(vttBlob);
+        finalTrackSrc = currentBlobUrl;
+      }
+    } catch (e) {
+      finalTrackSrc = subtitlesUrl;
+    }
+
+    const track = document.createElement('track');
+    track.kind = 'subtitles';
+    track.srclang = 'cs';
+    track.label = 'Čeština (Asistent)';
+    track.default = czSubtitlesEnabled;
+    track.src = finalTrackSrc;
+    track.setAttribute('data-nta-subs', 'true');
+
+    track.addEventListener('load', () => {
+      applySubtitlesVisibility();
+    });
+
+    video.appendChild(track);
+    applySubtitlesVisibility();
+  }
+
+  /* ==========================================================================
+     8. PŘEKRYVNÉ ROZHRANÍ (OVERLAY UI) S BILINGVNÍM TEXTEM A OPAKOVÁNÍM
      ========================================================================== */
 
   let overlayContainer = null;
@@ -742,14 +799,13 @@
     const mountTarget = document.fullscreenElement || document.body;
     mountTarget.appendChild(overlayContainer);
 
-    // Přepínání jazyka shrnutí
     const tabCz = overlayContainer.querySelector('#nta-tab-cz');
     const tabEn = overlayContainer.querySelector('#nta-tab-en');
 
     tabCz.addEventListener('click', () => switchSummaryLang('cz'));
     tabEn.addEventListener('click', () => switchSummaryLang('en'));
 
-    // Kopírování slovíček do schránky (pro Anki / Flashcards)
+    // Kopírování do schránky
     overlayContainer.querySelector('#nta-btn-copy-anki').addEventListener('click', (e) => {
       if (!currentActiveCheckpoint || !currentActiveCheckpoint.vocabulary) return;
       const tsv = currentActiveCheckpoint.vocabulary.map(v => `${v.en}\t${v.cz}`).join('\n');
@@ -763,13 +819,22 @@
     overlayContainer.querySelector('#nta-btn-replay').addEventListener('click', () => {
       if (!currentActiveCheckpoint) return;
       const replayTime = currentActiveCheckpoint.startTime || 0;
-      // Umožníme po zhlédnutí znovu checkpoint aktivovat
       if (currentActiveCheckpoint.id) {
         triggeredCheckpoints.delete(currentActiveCheckpoint.id);
       }
+
       if (activeVideoElement) {
         activeVideoElement.currentTime = replayTime;
+        activeVideoElement.play().catch(() => {});
       }
+
+      // Propojení s iframem přehrávače
+      broadcastToFrames({
+        type: 'NTA_REPLAY_SECTION',
+        startTime: replayTime,
+        checkpointId: currentActiveCheckpoint.id
+      });
+
       resumePlayback();
     });
 
@@ -858,7 +923,6 @@
         itemEl.appendChild(enRow);
         itemEl.appendChild(czText);
 
-        // Označení slovíčka po kliknutí jako naučené
         itemEl.addEventListener('click', () => {
           itemEl.classList.toggle('nta-learned');
         });
@@ -876,81 +940,21 @@
   }
 
   function resumePlayback() {
-    if (!overlayContainer) return;
-    overlayContainer.classList.remove('nta-visible');
+    if (overlayContainer) {
+      overlayContainer.classList.remove('nta-visible');
+    }
     isOverlayOpen = false;
 
     if (activeVideoElement && typeof activeVideoElement.play === 'function') {
       activeVideoElement.play().catch(() => {});
     }
+
+    broadcastToFrames({ type: 'NTA_RESUME_PLAYBACK' });
   }
 
   /* ==========================================================================
-     6. INJEKCE ČESKÝCH TITULKŮ A PŘEPÍNÁNÍ ZAP/VYP
-     ========================================================================== */
-
-  async function injectSubtitlesTrack(video, subtitlesUrl) {
-    if (!video || !subtitlesUrl) return;
-    if (video.querySelector('track[data-nta-subs="true"]')) return;
-
-    let finalTrackSrc = subtitlesUrl;
-
-    try {
-      const response = await fetch(subtitlesUrl, { mode: 'cors' });
-      if (response.ok) {
-        const vttContent = await response.text();
-        const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
-        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-        currentBlobUrl = URL.createObjectURL(vttBlob);
-        finalTrackSrc = currentBlobUrl;
-      }
-    } catch (e) {
-      finalTrackSrc = subtitlesUrl;
-    }
-
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.srclang = 'cs';
-    track.label = 'Čeština (Asistent)';
-    track.default = czSubtitlesEnabled;
-    track.src = finalTrackSrc;
-    track.setAttribute('data-nta-subs', 'true');
-
-    track.addEventListener('load', () => {
-      applySubtitlesVisibility();
-    });
-
-    video.appendChild(track);
-  }
-
-  function applySubtitlesVisibility() {
-    if (!activeVideoElement || !activeVideoElement.textTracks) return;
-
-    for (let i = 0; i < activeVideoElement.textTracks.length; i++) {
-      const t = activeVideoElement.textTracks[i];
-      if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
-        t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
-      }
-    }
-  }
-
-  function toggleSubtitles() {
-    czSubtitlesEnabled = !czSubtitlesEnabled;
-    localStorage.setItem('nta_subs_enabled', czSubtitlesEnabled ? '1' : '0');
-    applySubtitlesVisibility();
-    updateDrawerUI();
-  }
-
-  function setPlaybackRate(rate) {
-    if (activeVideoElement) {
-      activeVideoElement.playbackRate = rate;
-      updateDrawerUI();
-    }
-  }
-
-  /* ==========================================================================
-     7. SLEDOVÁNÍ ČASU A KONTROLNÍCH BODŮ
-     ========================================================================== */
+     9. SLEDOVÁNÍ ČASU A KONTROLNÍCH BODŮ
+     ========================================================================= */
 
   function handleTimeUpdate(video, config) {
     if (!config || !Array.isArray(config.checkpoints) || isOverlayOpen) return;
@@ -967,6 +971,14 @@
       if (isWithinTolerance || isJustPassed) {
         triggeredCheckpoints.add(checkpointKey);
         video.pause();
+
+        // Odeslat požadavek na zobrazení do hlavního okna (pokud jsme v iframe)
+        if (window.self !== window.top) {
+          try {
+            window.top.postMessage({ type: 'NTA_SHOW_OVERLAY', checkpoint: cp }, '*');
+          } catch (e) {}
+        }
+
         showOverlay(cp, video);
         break;
       }
@@ -974,7 +986,7 @@
   }
 
   /* ==========================================================================
-     8. PŘEHLEDNÝ OVLÁDACÍ PRVEK & KATALOG PŘIPRAVENÝCH HER
+     10. OVLÁDACÍ PANEL & PŘEHLED HER (V HLAVNÍM OKNĚ)
      ========================================================================== */
 
   let floatingWidgetEl = null;
@@ -988,15 +1000,14 @@
     floatingWidgetEl = document.createElement('div');
     floatingWidgetEl.id = 'nta-floating-widget';
 
-    // Vygenerování položek pro katalog her
     const playsListHtml = AVAILABLE_PLAYS.map(p => `
-      <a class="nta-play-item" href="${p.url}">
+      <div class="nta-play-item">
         <div class="nta-play-item-title">
           <span>${p.title}</span>
-          <span class="nta-play-item-badge ${p.isReady ? '' : 'nta-badge-wait'}">${p.badge}</span>
+          <span class="nta-play-item-badge">${p.badge}</span>
         </div>
-        <div class="nta-play-item-cast">${p.cast}</div>
-      </a>
+        <div class="nta-play-item-cast">${p.cast} • ${p.author}</div>
+      </div>
     `).join('');
 
     floatingWidgetEl.innerHTML = `
@@ -1035,7 +1046,6 @@
         </div>
       </div>
 
-      <!-- Kompaktní tlačítko pro otevření menu -->
       <button type="button" class="nta-pill-btn" id="nta-pill-toggle">
         <div class="nta-badge-dot nta-waiting" id="nta-dot"></div>
         <span style="font-weight: 700;">🎭 NT Asistent:</span>
@@ -1046,45 +1056,42 @@
 
     document.body.appendChild(floatingWidgetEl);
 
-    // Obsluha otevření / zavření menu
     const pillBtn = floatingWidgetEl.querySelector('#nta-pill-toggle');
     const drawer = floatingWidgetEl.querySelector('#nta-drawer');
     const closeBtn = floatingWidgetEl.querySelector('#nta-btn-drawer-close');
 
     pillBtn.addEventListener('click', () => {
-      isBadgeExpanded = !isBadgeExpanded;
-      drawer.classList.toggle('nta-open', isBadgeExpanded);
+      isDrawerOpen = !isDrawerOpen;
+      drawer.classList.toggle('nta-open', isDrawerOpen);
     });
 
     closeBtn.addEventListener('click', () => {
-      isBadgeExpanded = false;
+      isDrawerOpen = false;
       drawer.classList.remove('nta-open');
     });
 
-    // Přepínání titulků
     floatingWidgetEl.querySelector('#nta-btn-toggle-subs').addEventListener('click', toggleSubtitles);
 
-    // Tlačítka pro rychlost videa
     floatingWidgetEl.querySelectorAll('.nta-speed-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const rate = parseFloat(btn.getAttribute('data-rate'));
         setPlaybackRate(rate);
       });
     });
+
+    updateDrawerUI();
   }
 
   function updateDrawerUI() {
     if (!floatingWidgetEl) return;
 
-    // Tlačítko titulků
     const subsBtn = floatingWidgetEl.querySelector('#nta-btn-toggle-subs');
     if (subsBtn) {
       subsBtn.textContent = czSubtitlesEnabled ? 'Zapnuto ✓' : 'Vypnuto ✕';
       subsBtn.classList.toggle('nta-off', !czSubtitlesEnabled);
     }
 
-    // Tlačítka rychlosti
-    const currentRate = activeVideoElement ? activeVideoElement.playbackRate : 1.0;
+    const currentRate = targetPlaybackRate;
     floatingWidgetEl.querySelectorAll('.nta-speed-btn').forEach(btn => {
       const rate = parseFloat(btn.getAttribute('data-rate'));
       btn.classList.toggle('nta-active', Math.abs(rate - currentRate) < 0.02);
@@ -1107,7 +1114,7 @@
   }
 
   /* ==========================================================================
-     9. DETEKCE PŘEHRÁVAČE
+     11. DETEKCE PŘEHRÁVAČE & CENTRÁLNÍ PŘÍJEM ZPRÁV
      ========================================================================== */
 
   function attachToVideo(video) {
@@ -1119,6 +1126,18 @@
     const config = getCurrentConfig();
     updateStatusPill(true);
 
+    // Nastavení uložené rychlosti
+    if (targetPlaybackRate !== 1.0) {
+      video.playbackRate = targetPlaybackRate;
+    }
+
+    // Udržení nastavené rychlosti i když se player pokusí přepsat
+    video.addEventListener('ratechange', () => {
+      if (targetPlaybackRate !== 1.0 && Math.abs(video.playbackRate - targetPlaybackRate) > 0.02) {
+        video.playbackRate = targetPlaybackRate;
+      }
+    });
+
     if (window.self !== window.top) {
       try {
         window.top.postMessage({ type: 'NTA_VIDEO_ATTACHED' }, '*');
@@ -1127,6 +1146,8 @@
 
     if (config.subtitlesUrl) {
       injectSubtitlesTrack(video, config.subtitlesUrl);
+    } else {
+      applySubtitlesVisibility();
     }
 
     video.addEventListener('timeupdate', () => {
@@ -1141,20 +1162,68 @@
     }
   }
 
+  function setupMessageListener() {
+    window.addEventListener('message', (ev) => {
+      if (!ev.data) return;
+
+      // Synchronizace titulků z ovládacího panelu
+      if (ev.data.type === 'NTA_SET_SUBTITLES') {
+        czSubtitlesEnabled = ev.data.enabled;
+        applySubtitlesVisibility();
+      }
+
+      // Synchronizace rychlosti videa
+      if (ev.data.type === 'NTA_SET_PLAYBACK_RATE') {
+        targetPlaybackRate = ev.data.rate;
+        if (activeVideoElement) {
+          activeVideoElement.playbackRate = targetPlaybackRate;
+        }
+      }
+
+      // Opakování sekce odeslané z modálního okna
+      if (ev.data.type === 'NTA_REPLAY_SECTION') {
+        if (ev.data.checkpointId) {
+          triggeredCheckpoints.delete(ev.data.checkpointId);
+        }
+        if (activeVideoElement) {
+          activeVideoElement.currentTime = ev.data.startTime;
+          activeVideoElement.play().catch(() => {});
+        }
+      }
+
+      // Pokračování ve sledování
+      if (ev.data.type === 'NTA_RESUME_PLAYBACK') {
+        if (overlayContainer) {
+          overlayContainer.classList.remove('nta-visible');
+        }
+        isOverlayOpen = false;
+        if (activeVideoElement && typeof activeVideoElement.play === 'function') {
+          activeVideoElement.play().catch(() => {});
+        }
+      }
+
+      // Zobrazení overlay v hlavním okně vyvolané z iframe
+      if (ev.data.type === 'NTA_SHOW_OVERLAY') {
+        showOverlay(ev.data.checkpoint, null);
+      }
+
+      // Detekce přehrávače
+      if (ev.data.type === 'NTA_VIDEO_ATTACHED') {
+        updateStatusPill(true);
+      }
+    });
+  }
+
   function startAssistant() {
+    injectStyles();
+    setupMessageListener();
+
     const config = getCurrentConfig();
     renderFloatingWidget(config);
     checkPlayer();
 
-    // Kontrola každou sekundu
+    // Kontrola existence přehrávače každou sekundu
     setInterval(checkPlayer, 1000);
-
-    // Příjem zprávy od přehrávače v iframe
-    window.addEventListener('message', (ev) => {
-      if (ev.data && ev.data.type === 'NTA_VIDEO_ATTACHED') {
-        updateStatusPill(true);
-      }
-    });
 
     // Detekce navigace v SPA
     let lastUrl = window.location.href;
@@ -1171,7 +1240,7 @@
   }
 
   /* ==========================================================================
-     10. INICIALIZACE
+     12. INICIALIZACE
      ========================================================================== */
 
   if (document.readyState === 'loading') {
