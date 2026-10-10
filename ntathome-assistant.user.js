@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      2.1.0
+// @version      2.2.0
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -983,12 +983,13 @@
          ========================================================= */
       #nta-floating-widget {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 16px;
+        right: 16px;
         z-index: 2147483646;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #f8fafc;
         user-select: none;
+        box-sizing: border-box;
       }
 
       .nta-pill-btn {
@@ -996,11 +997,11 @@
         color: #f8fafc;
         border: 1px solid #334155;
         border-radius: 50px;
-        padding: 9px 18px;
+        padding: 8px 16px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        gap: 9px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
         font-size: 13px;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -1022,20 +1023,22 @@
       }
 
       .nta-drawer {
-        position: absolute;
-        bottom: 52px;
-        right: 0;
-        width: 350px;
-        max-height: min(85vh, 680px);
+        position: fixed;
+        bottom: 66px;
+        right: 16px;
+        width: 340px;
+        max-width: calc(100vw - 28px);
+        max-height: calc(100vh - 82px);
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 16px;
         box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85);
-        padding: 16px;
+        padding: 14px;
         display: none;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         overflow-y: auto;
+        box-sizing: border-box;
         z-index: 2147483647;
       }
       .nta-drawer::-webkit-scrollbar {
@@ -1064,7 +1067,7 @@
         display: flex;
         flex-direction: column;
         gap: 7px;
-        max-height: 250px;
+        max-height: 220px;
         overflow-y: auto;
         padding-right: 4px;
       }
@@ -1081,7 +1084,7 @@
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid #1e293b;
-        padding-bottom: 10px;
+        padding-bottom: 8px;
       }
       .nta-drawer-title {
         font-size: 14px;
@@ -1093,7 +1096,8 @@
         border: none;
         color: #94a3b8;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px;
+        padding: 2px 6px;
       }
 
       .nta-control-row {
@@ -1102,7 +1106,7 @@
         justify-content: space-between;
         background: #1e293b;
         border-radius: 10px;
-        padding: 9px 12px;
+        padding: 8px 11px;
         font-size: 13px;
       }
       .nta-btn-toggle {
@@ -1110,7 +1114,7 @@
         color: white;
         border: none;
         border-radius: 20px;
-        padding: 5px 14px;
+        padding: 5px 12px;
         font-size: 12px;
         font-weight: 700;
         cursor: pointer;
@@ -1130,7 +1134,7 @@
         color: #e2e8f0;
         border: none;
         border-radius: 6px;
-        padding: 4px 8px;
+        padding: 4px 7px;
         font-size: 11px;
         cursor: pointer;
         font-weight: 600;
@@ -1144,11 +1148,11 @@
       .nta-play-item {
         background: #1e293b;
         border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 9px 12px;
+        border-radius: 9px;
+        padding: 8px 10px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
         text-decoration: none;
         color: inherit;
         cursor: pointer;
@@ -1165,18 +1169,18 @@
       }
       .nta-play-item-title {
         font-weight: 700;
-        font-size: 13px;
+        font-size: 12.5px;
         color: #38bdf8;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .nta-play-item-badge {
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 700;
         background: rgba(34, 197, 94, 0.2);
         color: #4ade80;
-        padding: 2px 6px;
+        padding: 2px 5px;
         border-radius: 4px;
       }
       .nta-play-item-badge.nta-badge-active {
@@ -1184,8 +1188,75 @@
         color: #7dd3fc;
       }
       .nta-play-item-cast {
-        font-size: 11px;
+        font-size: 10.5px;
         color: #94a3b8;
+      }
+
+      /* 📱 Optimalizace pro mobily a malé obrazovky (na výšku) */
+      @media (max-width: 600px) {
+        #nta-floating-widget {
+          bottom: 10px;
+          right: 10px;
+        }
+        .nta-pill-btn {
+          padding: 6px 12px;
+          font-size: 11.5px;
+        }
+        .nta-drawer {
+          right: 10px;
+          left: 10px;
+          bottom: 52px;
+          width: auto;
+          max-width: none;
+          max-height: calc(100vh - 65px);
+          padding: 10px;
+          gap: 7px;
+          border-radius: 14px;
+        }
+        .nta-drawer-title {
+          font-size: 13px;
+        }
+        .nta-control-row {
+          padding: 6px 9px;
+          font-size: 11.5px;
+        }
+        .nta-btn-toggle {
+          padding: 3px 9px;
+          font-size: 10.5px;
+        }
+        .nta-group-btn {
+          padding: 3px 6px;
+          font-size: 10px;
+        }
+        .nta-plays-list {
+          max-height: 165px;
+          gap: 5px;
+        }
+        .nta-play-item {
+          padding: 6px 8px;
+        }
+        .nta-play-item-title {
+          font-size: 11.5px;
+        }
+        .nta-play-item-cast {
+          font-size: 10px;
+        }
+      }
+
+      /* 📺 Režim na šířku (landscape) na mobilu s malou výškou obrazovky */
+      @media (max-height: 520px) {
+        .nta-drawer {
+          top: 8px !important;
+          bottom: 8px !important;
+          right: 10px !important;
+          max-height: calc(100vh - 16px) !important;
+          width: 320px !important;
+          padding: 8px 10px !important;
+          gap: 6px !important;
+        }
+        .nta-plays-list {
+          max-height: 110px !important;
+        }
       }
 
       /* =========================================================
@@ -1936,6 +2007,13 @@
     closeBtn.addEventListener('click', () => {
       isDrawerOpen = false;
       drawer.classList.remove('nta-open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isDrawerOpen && floatingWidgetEl && !floatingWidgetEl.contains(e.target)) {
+        isDrawerOpen = false;
+        drawer.classList.remove('nta-open');
+      }
     });
 
     floatingWidgetEl.querySelector('#nta-btn-toggle-subs').addEventListener('click', toggleSubtitles);
