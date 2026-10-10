@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.9.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town a The Seagull s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
+// @version      2.0.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -52,12 +52,48 @@
       badge: 'Připraveno (5 checkpointů, CZ titulky)',
       isReady: true
     },
-    {
+        {
       key: 'the-seagull',
       title: 'The Seagull',
       author: 'Anton Chekhov (Anya Reiss)',
       cast: 'Emilia Clarke, Tom Rhys Harries, Indira Varma, Daniel Monks',
       url: 'https://www.ntathome.com/videos/the-seagull-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'antigone',
+      title: 'Antigone',
+      author: 'Sophocles (Don Taylor)',
+      cast: 'Christopher Eccleston, Jodie Whittaker, Luke Newberry',
+      url: 'https://www.ntathome.com/videos/antigone-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'macbeth',
+      title: 'Macbeth',
+      author: 'William Shakespeare',
+      cast: "Rory Kinnear, Anne-Marie Duff, Patrick O'Kane",
+      url: 'https://www.ntathome.com/macbeth/videos/macbeth-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'all-my-sons',
+      title: 'All My Sons',
+      author: 'Arthur Miller',
+      cast: 'Bryan Cranston, Marianne Jean-Baptiste, Paapa Essiedu',
+      url: 'https://www.ntathome.com/all-my-sons-2026/videos/all-my-sons-2026-full-play',
+      badge: 'Připraveno (5 checkpointů, CZ titulky)',
+      isReady: true
+    },
+    {
+      key: 'hamlet',
+      title: 'Hamlet',
+      author: 'William Shakespeare',
+      cast: 'Hiran Abeysekera, Francesca Mills, Nia Gwynne',
+      url: 'https://www.ntathome.com/hamlet-1/videos/hamlet-full-play-1',
       badge: 'Připraveno (5 checkpointů, CZ titulky)',
       isReady: true
     }
@@ -449,6 +485,358 @@
       ]
     },
 
+    // 🏛️ ANTIGONE
+    'antigone': {
+      title: 'Antigone',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Antigone.cs.vtt',
+      checkpoints: [
+        {
+          id: 'antigone-cp-1',
+          startTime: 0,
+          time: 920, // 15:20
+          title: '1. Scéna: Zapovězený pohřeb a Kreontův dekret',
+          summaryCz: `Po bratrovražedném boji o Théby, v němž padli oba synové Oidipovi (Eteoklés i Polyneikés), se Antigona tajně schází se svou sestrou Isménou. Oznamuje jí krutý výnos nového krále Kreonta: zatímco Eteoklés byl pohřben se všemi vojenskými poctami, Polyneikovo tělo má zůstat nepohřbeno na pospas mrchožroutům pod trestem ukamenování. Antigona je odhodlána bratra navzdory zákazu pohřbít z posvátné rodinné povinnosti. Isména ze strachu před mocí státu odmítá pomoci. Kreon v slavnostním projevu před radou starších formuluje svou politickou zásadu: oddanost státu musí stát nade všemi osobními a rodinnými pouty.`,
+          summaryEn: `Following the civil war in which Oedipus's sons Eteocles and Polyneices killed one another, Antigone secretly meets her sister Ismene outside the palace. She reveals the ruthless decree of Thebes' new ruler, Creon: while Eteocles received full martial honors, Polyneices' corpse must lie unburied as carrion for dogs and vultures under penalty of public stoning. Antigone resolves to defy the decree out of familial love and sacred divine duty. Ismene, terrified of state power, refuses to assist. In an address to the elders, Creon declares his political creed: loyalty to the state supersedes all personal and kinship ties.`,
+          vocabulary: [
+            { en: 'edict / decree', cz: 'výnos / nařízení krále' },
+            { en: 'scavenger / carrion', cz: 'mrchožrout / mršina' },
+            { en: 'sacred rites', cz: 'posvátné pohřební obřady' },
+            { en: 'unwritten laws of the gods', cz: 'nepsané věčné zákony bohů' },
+            { en: 'treason / traitor', cz: 'vlastizrada / zrádce vlasti' },
+            { en: 'stoning to death', cz: 'ukamenování k smrti' }
+          ]
+        },
+        {
+          id: 'antigone-cp-2',
+          startTime: 920,
+          time: 1940, // 32:20
+          title: '2. Scéna: Strážcovo svědectví a zatčení Antigony',
+          summaryCz: `Zděšený strážce oznamuje Kreontovi, že někdo navzdory hlídce rituálně posypal Polyneikovo tělo prachem. Rozzuřený a paranoidní Kreon podezírá politické úplatkářství a vyhrožuje strážcům mučením na skřipci. O něco později se strážce vrací a vítězoslavně přivádí zajatou Antigonu, kterou přistihl při činu uprostřed prachové bouře, když tělo znovu rituálně omývala a sypala prachem. Antigona v hrdé obhajobě před králem prohlašuje, že Kreontovy pozemské zákony nemají moc přebít věčné a nezvratné zákony nebes. Když Isména nabízí sdílet vinu, Antigona její opožděné mučednictví odmítá.`,
+          summaryEn: `A terrified sentry informs Creon that an unknown person has performed a ritual dust burial over Polyneices' rotting corpse. Creon suspects bribery and threatens the sentries with torture. Soon after, the sentry returns escorting Antigone, whom he caught red-handed during a sudden dust storm performing libations over the exposed body. Antigone fearlessly proclaims that a mortal ruler's proclamation cannot nullify the eternal, unwritten laws of Heaven. When a remorseful Ismene offers to share the guilt, Antigone firmly spurns her belated martyrdom.`,
+          vocabulary: [
+            { en: 'sentry / guard', cz: 'hlídka / strážce' },
+            { en: 'caught red-handed', cz: 'přistižen přímo při činu' },
+            { en: 'libation', cz: 'úlitba bohům' },
+            { en: 'rack and torture', cz: 'mučení na skřipci' },
+            { en: 'gag of terror', cz: 'náhubek strachu / teror tyranie' },
+            { en: 'mortal proclamation', cz: 'výnos smrtelníka' }
+          ]
+        },
+        {
+          id: 'antigone-cp-3',
+          startTime: 1940,
+          time: 3120, // 52:00
+          title: '3. Scéna: Haimónův spor s otcem a rozsudek živého pohřbení',
+          summaryCz: `Kreontův syn Haimón, snoubenec Antigony, přichází k otci. Nejprve projevuje synovskou oddanost, ale poté naléhavě varuje krále: lid v Thébách s Antigonou tajně soucítí a oslavuje její čin. Haimón otce vyzývá k pružnosti a připomíná: „Stát, který patří jedinému muži, není žádným státem.“ Kreon v záchvatu autoritářské pýchy syna uráží a obviňuje z podřízenosti ženě. Haimón v hněvu odchází s přísahou, že ho otec už nikdy neuvidí. Kreon mění rozsudek: namísto veřejného ukamenování nařizuje odvést Antigonu do skalní jeskyně a zazdít ji zaživa s minimem jídla, aby se vyhnul přímé poskvrně královské krve.`,
+          summaryEn: `Creon's son Haemon, betrothed to Antigone, attempts to reason with his father. Haemon urgently cautions that the entire populace of Thebes secretly weeps for Antigone, praising her sisterly piety. Urging his father to cultivate flexibility rather than brittle stubbornness, Haemon remarks that a city ruled by one man is no city at all. Blinded by pride, Creon mocks him as a woman's slave. Haemon storms out, vowing his father will never see him again. Creon commutes Antigone's sentence to solitary entombment in a subterranean stone cave with minimal rations to avert direct blood guilt.`,
+          vocabulary: [
+            { en: 'filial obedience', cz: 'synovská poslušnost' },
+            { en: 'tyranny / one-man city', cz: 'tyranie / stát jednoho vládce' },
+            { en: 'flexibility vs stubbornness', cz: 'pružnost proti zatvrzelosti' },
+            { en: 'subterranean vault / cave', cz: 'podzemní skalní hrobka' },
+            { en: 'betrothed / fiance', cz: 'zasnoubený / snoubenec' },
+            { en: 'blood guilt / pollution', cz: 'vina krve / poskvrna' }
+          ]
+        },
+        {
+          id: 'antigone-cp-4',
+          startTime: 3120,
+          time: 4320, // 1:12:00
+          title: '4. Scéna: Antigonin pláč a Teiresiovo mrazivé varování',
+          summaryCz: `Vojáci odvádějí Antigonu k hrobce. V dojemném lamento pláče nad svým osudem: umírá mladá, bez svatby a bez dětí, jako nevěsta podsvětí, přesto hrdá na svou morální integritu. Krátce po jejím odchodu přichází starý slepý věštec Teiresiás. Oznamuje Kreontovi zlověstná znamení: ptáci se vraždí na obětištích a posvátný oheň nehoří, protože oltáře v Thébách jsou znesvěceny hnijícím tělem Polyneika. Teiresiás varuje krále před zatvrzelou pýchou a prorokuje, že bohové si za tělo nepohřbeného a tělo zaživa pohřbené vezmou život z Kreontovy vlastní krve.`,
+          summaryEn: `Guards lead Antigone toward the rock-cut tomb. In a heart-rending farewell monologue, she laments her tragic fate: dying unwed and childless, descending to marry only the god of Death, yet steadfast in her moral integrity. Soon after, the blind prophet Tiresias arrives. He warns of dreadful omens: screaming birds ripping each other apart and sacrificial fires sputtering out, because the city's altars have been desecrated by carrion from Polyneices' corpse. Tiresias delivers an ultimatum: obstinate pride is madness; Heaven demands a life for a life from Creon's own flesh.`,
+          vocabulary: [
+            { en: 'bridal bower of death', cz: 'svatební komnata smrti' },
+            { en: 'omens / augury', cz: 'zlá znamení / věštění z ptáků' },
+            { en: 'desecrated altars', cz: 'znesvěcené oltáře' },
+            { en: 'obstinacy / stubborness', cz: 'zatvrzelost / paličatost' },
+            { en: 'fury of the gods', cz: 'hněv bohů / fúrie podsvětí' },
+            { en: 'integrity', cz: 'morální pevnost / integrita' }
+          ]
+        },
+        {
+          id: 'antigone-cp-5',
+          startTime: 4320,
+          time: 5530, // 1:32:10
+          title: '5. Scéna: Zkáza vladařského domu a poznání pravdy',
+          summaryCz: `Vyděšený sbor přesvědčí Kreonta, aby ustoupil. Král spěchá Polyneika řádně pohřbít a poté osvobodit Antigonu. Přichází však posel se zprávou o katastrofě: když dorazili ke skalní kobce, Antigona již visela oběšená na svém závoji. Haimón klečel u jejího těla, a když spatřil otce, v zoufalém hněvu po něm sekl mečem a poté obrátil ostří proti své vlastní hrudi. Královna Eurydiké po vyslechnutí zprávy v tichu odejde a probodne se nožem u oltáře, přičemž prokleje Kreonta za smrt obou synů. Zlomený Kreon se vrací s tělem svého syna v náručí a v zoufalství prosí o vlastní smrt. Hra končí moudrostí sboru: pýcha přináší pád a rozum přichází až s utrpením.`,
+          summaryEn: `Shaken, Creon heeds the Chorus's advice and rushes to bury Polyneices' remains, then unseal the cavern. However, a messenger brings news of catastrophic ruin: arriving at the vault, they found Antigone hanged by her veil. Haemon was clutching her lifeless corpse; upon seeing Creon, the prince lunged at his father with his sword, then turned the blade into his own ribs, dying beside his beloved. Hearing this, Queen Eurydice stabs herself at the altar, cursing Creon as the murderer of their children. Creon returns carrying Haemon's corpse, utterly shattered, begging for death. The Chorus delivers the closing truth: proud men are broken to teach wisdom in bitter old age.`,
+          vocabulary: [
+            { en: 'messenger / herald', cz: 'posel přinášející zprávu' },
+            { en: 'veil / linen noose', cz: 'závoj / smyčka z plátna' },
+            { en: 'turn the blade against oneself', cz: 'obrátit ostří proti sobě' },
+            { en: 'shattered / broken', cz: 'zlomený / v troskách' },
+            { en: 'hubris / arrogance', cz: 'pýcha / zpupnost před bohy' },
+            { en: 'wisdom through suffering', cz: 'moudrost vykoupená utrpením' }
+          ]
+        }
+      ]
+    },
+
+    // ⚔️ MACBETH
+    'macbeth': {
+      title: 'Macbeth',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Macbeth.cs.vtt',
+      checkpoints: [
+        {
+          id: 'macbeth-cp-1',
+          startTime: 0,
+          time: 2040, // 34:00
+          title: '1. Dějství: Věštba čarodějnic a krvavé plány',
+          summaryCz: `Vojevůdci Macbeth a Banquo se po vítězné bitvě setkávají na mlhavém vřesovišti se třemi čarodějnicemi. Ty Macbetha oslovují jako théna z Glamisu, z Cawdoru a budoucího krále, zatímco Banquovi věští, že zplodí linii králů. Krátce nato přichází posel s potvrzením, že král Duncan jmenoval Macbetha thénem z Cawdoru. Lady Macbeth po přečtení manželova dopisu vzývá temné síly („zbavte mě mého ženského pohlaví“) a přesvědčuje váhajícího Macbetha, aby krále Duncana během noční návštěvy na jejich hradě v Inverness zavraždil.`,
+          summaryEn: `Scottish generals Macbeth and Banquo encounter three weird sisters on a misty heath. The witches prophesy that Macbeth will become Thane of Cawdor and King hereafter, while Banquo will father a royal lineage. When King Duncan's messengers confirm Macbeth's elevation to Thane of Cawdor, his ambition is ignited. Receiving his letter at Inverness, Lady Macbeth invokes spirits of murder to "unsex" her of compassion, fiercely overriding her husband's moral doubts and orchestrating Duncan's murder during his royal visit.`,
+          vocabulary: [
+            { en: 'weird sisters / witches', cz: 'tři sudičky / čarodějnice' },
+            { en: 'Thane of Glamis / Cawdor', cz: 'thén (skotský šlechtic) z Glamisu / Cawdoru' },
+            { en: 'prophecy / foresee', cz: 'proroctví / předpověď' },
+            { en: 'unsex me here', cz: 'zbavte mě ženství (slavný monolog Lady Macbeth)' },
+            { en: 'innocent flower vs serpent', cz: 'nevinný květ ukrývající hada' },
+            { en: 'vaulting ambition', cz: 'přepjatá / bezohledná ctižádost' }
+          ]
+        },
+        {
+          id: 'macbeth-cp-2',
+          startTime: 2040,
+          time: 3090, // 51:30
+          title: '2. Dějství: Vize dýky, vražda krále Duncana a útěk princů',
+          summaryCz: `V hluboké noci má Macbeth halucinaci krvavé dýky vznášející se ve vzduchu („Je to dýka, co před sebou vidím?“). Vstoupí do královské ložnice a spícího Duncana zavraždí. Vrací se v šoku s krvavýma rukama a dýkami, neschopen říci „Amen“ a přesvědčen, že „zavraždil spánek“. Lady Macbeth dýky chladnokrevně odnáší zpět ke strážím, aby je potřísnila krví. Následuje komická scéna vrátného reagujícího na bušení u brány. Macduff objevuje zavražděného krále; Duncanovi synové Malcolm a Donalbain v obavě o život prchají do Anglie a Irska, a Macbeth je korunován králem ve Scone.`,
+          summaryEn: `Under cover of night, Macbeth suffers a terrifying hallucination of a bloodied dagger floating toward Duncan's bedchamber. Compelled onward, he murders the sleeping sovereign. Paralyzed by guilt, he returns clutching the bloodied daggers, unable to pronounce "Amen" and terrorized by voices crying "Macbeth does murder sleep." Lady Macbeth takes the daggers herself to smear the chamberlains with blood. Loud knocking summons the drunken Porter. Macduff discovers the slaughtered king; Duncan's heirs Malcolm and Donalbain flee, leaving the empty throne to Macbeth.`,
+          vocabulary: [
+            { en: 'dagger of the mind', cz: 'přelud dýky / výplod mysli' },
+            { en: 'Macbeth does murder sleep', cz: 'Macbeth zavraždil spánek' },
+            { en: 'Neptune\'s ocean', cz: 'Neptunův oceán (nesmyje krev z rukou)' },
+            { en: 'porter scene', cz: 'scéna vrátného u brány' },
+            { en: 'treason / sacrilegious murder', cz: 'velezrada / svatokrádežná vražda' },
+            { en: 'coronation at Scone', cz: 'korunovace ve Scone' }
+          ]
+        },
+        {
+          id: 'macbeth-cp-3',
+          startTime: 3090,
+          time: 4860, // 1:21:00
+          title: '3. Dějství: Zavraždění Banqua a hostina s přízrakem',
+          summaryCz: `Jako nový král trpí Macbeth paranoiou kvůli věštbě o Banquových potomcích. Najme vrahy, aby přepadli Banqua i jeho syna Fleance. Banquo je zabit, ale Fleance uprchne do tmy. Během slavnostní královské hostiny usedá na Macbethovo místo zkrvavený duch zavražděného Banqua. Macbeth před zraky skotských lordů propadá šílenému záchvatu děsu („Netřes na mě svou krvavou kšticí!“). Lady Macbeth hosty uklidňuje a hostinu předčasně rozpouští. Macbeth si uvědomuje, že se brodí v krvi tak hluboko, že návrat zpět je nemožný („Krev žádá krev“), a rozhodne se vyhledat čarodějnice.`,
+          summaryEn: `Tormented by insecurity and the prophecy that Banquo's seed will reign, King Macbeth hires assassins to ambush Banquo and Fleance. Banquo is slain, but Fleance escapes. At the royal banquet, the blood-dripping ghost of Banquo appears in Macbeth's seat. Terrified before the assembled lords, Macbeth screams: "Never shake thy gory locks at me!" Lady Macbeth disperses the baffled guests. Reckoning that he is stepped so far in blood that returning were as tedious as go o'er ("blood will have blood"), Macbeth vows to confront the weird sisters again.`,
+          vocabulary: [
+            { en: 'fruitless crown / barren sceptre', cz: 'neplodná koruna / jalové žezlo' },
+            { en: 'gory locks', cz: 'krvavá kštice / zkrvavené kadeře ducha' },
+            { en: 'blood will have blood', cz: 'krev si žádá krev' },
+            { en: 'stepped in blood so far', cz: 'zabředl do krve tak hluboko' },
+            { en: 'paranoia / sleeplessness', cz: 'stihomam / nespavost tyrana' },
+            { en: 'scorpions of the mind', cz: 'štíři v mysli' }
+          ]
+        },
+        {
+          id: 'macbeth-cp-4',
+          startTime: 4860,
+          time: 6600, // 1:50:00
+          title: '4. Dějství: Nová proroctví sester a vyvraždění Macduffovy rodiny',
+          summaryCz: `Macbeth vstupuje do jeskyně čarodějnic vařících svůj pekelný kotel („Vař se, vař a pěnu chrl...“). Zjevení mu předkládají dvojsmyslná proroctví: má se mít na pozoru před Macduffem, avšak „nikdo z ženy zrozený nemůže Macbethovi ublížit“ a nepadne, dokud „velký birnamský les nepovstane proti hradu Dunsinane“. Ukolébán pocitem nezranitelnosti, nechá ze msty přepadnout Macduffův nechráněný hrad ve Fife a brutálně povraždit Macduffovu manželku i malé děti. V Anglii mezitím Macduff přesvědčuje prince Malcolma ke společnému tažení, když dorazí zpráva o zkáze jeho rodiny. Zlomený Macduff přísahá osobní pomstu.`,
+          summaryEn: `Macbeth seeks out the witches around their boiling cauldron ("Double, double toil and trouble"). Apparitions summon riddles: to beware Macduff, yet that "none of woman born shall harm Macbeth," and that he shall never be vanquished until "Great Birnam Wood to high Dunsinane Hill shall come against him." Deluded by invincibility, Macbeth reacts ruthlessly to Macduff's flight by sending killers to sack Macduff's castle at Fife, butchering his wife and children. In England, Macduff pledges fealty to Malcolm; when news arrives of his slaughtered family, grief transforms into fierce resolution for revenge.`,
+          vocabulary: [
+            { en: 'cauldron / toil and trouble', cz: 'kotel čarodějnic / pekelná směs' },
+            { en: 'none of woman born', cz: 'nikdo z ženy zrozený' },
+            { en: 'Birnam Wood to Dunsinane', cz: 'Birnamský les k Dunsinanu' },
+            { en: 'slaughter of the innocents', cz: 'vyvraždění nevinných dětí a ženy' },
+            { en: 'grief transformed to rage', cz: 'žal přetavený ve spravedlivý hněv' },
+            { en: 'tyrant / butcher', cz: 'tyran / řezník' }
+          ]
+        },
+        {
+          id: 'macbeth-cp-5',
+          startTime: 6600,
+          time: 8390, // 2:19:50
+          title: '5. Dějství: Šílenství Lady Macbeth, pochodující les a pád tyrana',
+          summaryCz: `V Dunsinanu lékař a dvorní dáma sledují náměsíčnou Lady Macbeth, která si posedle mne ruce ve snaze smýt pomyslnou krev („Pryč, prokletá skvrno! Ani všechno arabské koření neprovoní tuto drobnou ruku“). Anglické vojsko vedené Malcolmem a Macduffem si u Birnamu uřízne větve jako kamufláž a les se dává do pohybu. Macbeth se dozvídá o královnině sebevraždě a pronáší slavný monolog o marnosti existence („Zítra a zítra a zítra... život je pouhý stín, historka vyprávěná bláznem plná hluku a zuřivosti, neznamenající nic“). V souboji Macduff odhaluje, že byl z lůna své matky předčasně vyříznut císařským řezem. Macduff Macbetha zabije a Malcolm je provolán králem Skotska.`,
+          summaryEn: `At Dunsinane castle, a doctor and gentlewoman watch Lady Macbeth sleepwalking in agony, endlessly scrubbing invisible blood from her hands ("Out, damned spot! All the perfumes of Arabia will not sweeten this little hand"). Allied troops cut down boughs at Birnam Wood for camouflage, fulfilling the prophecy as the forest moves toward Dunsinane. Learning of Lady Macbeth's suicide, Macbeth speaks the immortal soliloquy ("Tomorrow, and tomorrow, and tomorrow... life's but a walking shadow, a tale told by an idiot, full of sound and fury, signifying nothing"). Confronting Macduff, Macbeth learns his foe was "from his mother's womb untimely ripped." Macduff slays the tyrant, and Malcolm is hailed King of Scotland.`,
+          vocabulary: [
+            { en: 'out, damned spot', cz: 'pryč, prokletá skvrno (monolog Lady Macbeth)' },
+            { en: 'sleepwalking / somnambulism', cz: 'náměsíčnost z pocitu viny' },
+            { en: 'tomorrow, and tomorrow, and tomorrow', cz: 'zítra a zítra a zítra (monolog o nicotě bytí)' },
+            { en: 'tale told by an idiot', cz: 'pohádka vyprávěná bláznem plná hluku' },
+            { en: 'untimely ripped', cz: 'předčasně vyříznut (císařským řezem)' },
+            { en: 'restoration of order', cz: 'obnovení řádu a spravedlnosti' }
+          ]
+        }
+      ]
+    },
+
+    // ✈️ ALL MY SONS
+    'all-my-sons': {
+      title: 'All My Sons',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/All_My_Sons.cs.vtt',
+      checkpoints: [
+        {
+          id: 'all-my-sons-cp-1',
+          startTime: 0,
+          time: 2100, // 35:00
+          title: '1. Dějství (Část 1): Zlomený strom a návrat Annie',
+          summaryCz: `Srpen roku 1947 v americkém předměstí. Noční vichřice vyvrátila štíhlou jabloň zasazenou jako památník za Larryho Kellera, stíhacího pilota nezvěstného už tři roky od války. Joe Keller (vlastník továrny) čte na zahradě noviny a soused Frank propočítává Larryho horoskop. Syn Chris se svěřuje otci se svým přáním oženit se s Ann Deeverovou – bývalou Larryho dívkou, která právě přijela na návštěvu. Joe má obavy z reakce své manželky Kate, která sveřepě odmítá přijmout, že je Larry mrtvý, a jakýkoli sňatek Chrise s Ann by pro ni znamenal zradu a přiznání synovy smrti.`,
+          summaryEn: `August 1947 in a serene Midwestern suburb. A fierce midnight wind has toppled the young apple tree planted as a memorial for Larry Keller, a fighter pilot missing in action for over three years. Self-made manufacturer Joe Keller chats amiably in the backyard with neighbors while Frank Lubey casts Larry's horoscope. Surviving son Chris confides in his father that he intends to propose marriage to Ann Deever – Larry's former sweetheart, visiting for the weekend. Joe worries about his wife Kate, whose unyielding denial that Larry is dead means that Chris marrying Ann would be an intolerable public admission of mourning.`,
+          vocabulary: [
+            { en: 'missing in action (MIA)', cz: 'nezvěstný v boji' },
+            { en: 'memorial tree', cz: 'pamětní strom' },
+            { en: 'denial / refuse to grieve', cz: 'popírání reality / odmítání smutečního procesu' },
+            { en: 'sweetheart / fiancee', cz: 'milá / snoubenka' },
+            { en: 'self-made man', cz: 'muž, který se vypracoval z ničeho' },
+            { en: 'domestic tranquility', cz: 'zdánlivá domácí idyla' }
+          ]
+        },
+        {
+          id: 'all-my-sons-cp-2',
+          startTime: 2100,
+          time: 3720, // 1:02:00
+          title: '1. Dějství (Část 2): Stín továrny a telefonát z New Yorku',
+          summaryCz: `Ann hovoří s rodinou Kellerových o svém otci Steveovi Deeverovi – bývalém Kellerově společníkovi, který sedí ve vězení za expedici vadných hlav válců pro motory stíhaček P-40, což způsobilo zřícení 21 pilotů. Joe Keller se vehementně obhajuje, že byl v inkriminovaný den nemocný doma v posteli se zápalem plic, a svaluje veškerou vinu na Steveovu zbabělost. Chris vyznává Ann lásku a svěřuje se jí s tíživým pocitem viny přeživšího velitele ze své roty („připadá mi, jako bych neměl právo na štěstí“). Idyla se však hroutí, když z věznice v Columbusu volá Annin bratr George, který oznamuje, že právě mluvil s otcem a okamžitě nasedá na vlak k nim.`,
+          summaryEn: `Ann and the Kellers revisit the painful wartime scandal involving her father, Steve Deever – Joe's partner who was convicted of shipping cracked cylinder heads to the Army Air Force, causing 21 aircraft to crash. Keller insists he was innocent, claiming he was bedridden with severe flu and that Steve made the fateful decision out of cowardice. Chris pours out his heart to Ann, confessing survivor guilt over his fallen troops and struggling to accept post-war prosperity. Just as Chris and Ann profess their mutual devotion, a frantic long-distance telephone call from Ann's brother George arrives: having visited Steve in prison, George is boarding a train to unmask the truth.`,
+          vocabulary: [
+            { en: 'cracked cylinder heads', cz: 'prasklé hlavy motorových válců' },
+            { en: 'take the blame / fall guy', cz: 'vzít vinu na sebe / obětní beránek' },
+            { en: 'survivor guilt', cz: 'vina těch, kdo přežili' },
+            { en: 'profiteering', cz: 'válečné kořistnictví / kšeftování s válkou' },
+            { en: 'brotherhood of soldiers', cz: 'bratrství vojáků v boji' },
+            { en: 'disturbing news', cz: 'znepokojivá zpráva' }
+          ]
+        },
+        {
+          id: 'all-my-sons-cp-3',
+          startTime: 3720,
+          time: 6420, // 1:47:00
+          title: '2. Dějství: Příjezd George a osudné prořeknutí',
+          summaryCz: `George Deever přijíždí rozhněvaný a vyčerpaný. Vypráví Ann pravdu ze Steveovy výpovědi: Joe nařídil zavařit a zakrýt trhliny ve válcích po telefonu, aby nepřišel o armádní kontrakt, a když přišla katastrofa, hovor v soudní síni zapřel. Joe se snaží George uklidnit vlídností a nabídkou výhodné práce pro otce po propuštění z vězení. Situace se zdá uklidněná, dokud Kate v euforii a neopatrnosti neřekne, že Joe nebyl za patnáct let ani jediný den nemocný. George okamžitě udeří: v den dodávky prasklých válců Joe přece tvrdil, že měl zápal plic! Chris po odchodu George konfrontuje otce a Joe se v zoufalství přizná, že válce nechal poslat pro zisk své rodiny. Zdrcený Chris křičí: „Pro mě? Co jsi to za člověka? Ty jsi zabil 21 kluků!“`,
+          summaryEn: `George Deever arrives tense and adversarial. He retells his father's account: that Keller ordered the defective cylinders welded over via telephone to avoid financial ruin, and later cowardly denied the phone call under oath. Keller disarms George with paternal warmth and the offer of a law partnership upon Steve's release. The tension dissolves until Kate unwittingly lets slip that Joe has never been sick a single day in fifteen years. George seizes on the contradiction: Keller's pneumonia was his entire court alibi. As George leaves, Chris corners his father until Joe confesses to authorizing the cover-up for family business survival. Shattered, Chris erupts: "For me? Where do you live, where have you come from? You killed twenty-one pilots!"`,
+          vocabulary: [
+            { en: 'slip of the tongue', cz: 'nechtěné prořeknutí se' },
+            { en: 'ironclad alibi', cz: 'neprůstřelné alibi' },
+            { en: 'perjury', cz: 'křivá přísaha u soudu' },
+            { en: 'practical business / profit', cz: 'obchodní pragmatismus / honba za ziskem' },
+            { en: 'moral collapse', cz: 'morální zhroucení' },
+            { en: 'beast / murderer', cz: 'zvíře / vrah vlastních lidí' }
+          ]
+        },
+        {
+          id: 'all-my-sons-cp-4',
+          startTime: 6420,
+          time: 7920, // 2:12:00
+          title: '3. Dějství (Část 1): Noční čekání a Larryho dopis',
+          summaryCz: `Dvě hodiny v noci. Kate sedí na zahradní židli a čeká na Chrise, který po odhalení ujel autem do tmy. Soused lékař Jim Bayliss jí sděluje, že o Joeově vině celou dobu věděl, protože v životě člověk musí dělat kompromisy. Joe tvrdí, že rodina je nejvyšší hodnota, Chris se však vrací a prohlašuje, že otce nemůže udat na policii, protože by to bylo snadné gesto, ale nedokáže dál žít s jeho penězi. V tu chvíli vystoupí Ann a předloží Kate to, co celou dobu tajila: poslední dopis, který jí Larry poslal 25. listopadu 1943 ze své základny, těsně předtím, než byl prohlášen za nezvěstného.`,
+          summaryEn: `Two in the morning. Kate sits on the porch in the damp darkness, waiting for Chris, who sped away in his car. Neighbor Dr. Jim Bayliss reveals he always knew Joe was guilty, observing that life forces every idealist into painful compromises. Keller remains stubbornly defensive, insisting that nothing is bigger than family. Chris returns, disillusioned, stating he cannot bring himself to send his father to prison because the world is too cynical, but can no longer touch his money. Desperate to resolve the impasse and marry Chris, Ann hands Kate a confidential letter Larry wrote to her on November 25, 1943, right before his final reconnaissance flight.`,
+          vocabulary: [
+            { en: 'compromise of idealism', cz: 'zrada ideálů / kompromis se svědomím' },
+            { en: 'cynicism of the world', cz: 'cynismus světa' },
+            { en: 'reconnaissance flight', cz: 'průzkumný bojový let' },
+            { en: 'family above all', cz: 'rodina nade vše (Kellerova omluva)' },
+            { en: 'disillusionment', cz: 'vystřízlivění / ztráta iluzí' },
+            { en: 'suicide note / final letter', cz: 'dopis na rozloučenou' }
+          ]
+        },
+        {
+          id: 'all-my-sons-cp-5',
+          startTime: 7920,
+          time: 8900, // 2:28:20
+          title: '3. Dějství (Část 2): „Všichni to byli moji synové“ a tragický výstřel',
+          summaryCz: `Chris vezme dopis a přečte ho otci nahlas: Larry se z novin dozvěděl o skandálu s prasklými válci a byl tak zdrcen hanbou a zradou svého otce vůči spolubojovníkům, že se rozhodl naschvál zřítit své letadlo do moře. Keller po vyslechnutí dopisu konečně procitne z celoživotního sebeklamu. Tiše pronese klíčová slova dramatu: „Myslím, že pro něj to byli všechno moji synové. A myslím, že pro mě také.“ Joe řekne, že si vezme sako a půjde se sám přihlásit na policii. Vejde do domu. Zatímco Chris a Kate čekají na verandě, z patra zazní osudný výstřel z pistole. Chris v šoku a pláči spěchá dovnitř, ale Kate ho objímá a šeptá: „Pššt... Žij, Chrisi. Prostě žij.“`,
+          summaryEn: `Chris reads Larry's farewell letter aloud to his father: having read reports of the cracked cylinders, Larry was so overwhelmed by humiliation and the knowledge of his father's guilt that he resolved to crash his plane deliberately during his next mission. The revelation shatters Keller's defense mechanism. In agonizing epiphany, he speaks the central thesis: "I think to him they were all my sons. And I guess they were, I guess they were." Joe steps into the house ostensibly to retrieve his jacket and turn himself into the authorities. A gunshot rings out from the master bedroom. Chris sobs inconsolably, but Kate cradles him on the porch, whispering: "Shh... Don't take it on yourself. Forget now. Live, Chris. Live."`,
+          vocabulary: [
+            { en: 'they were all my sons', cz: 'všichni to byli moji synové (ústřední poselství hry)' },
+            { en: 'epiphany / revelation', cz: 'prozření / poznání pravdy' },
+            { en: 'shattering guilt', cz: 'drtivá vina' },
+            { en: 'gunshot offstage', cz: 'výstřel za scénou' },
+            { en: 'deliberate crash', cz: 'úmyslné zřícení letounu (sebevražda)' },
+            { en: 'forgiveness and life', cz: 'odpuštění a povinnost žít dál' }
+          ]
+        }
+      ]
+    },
+
+    // 👑 HAMLET
+    'hamlet': {
+      title: 'Hamlet',
+      subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Hamlet.cs.vtt',
+      checkpoints: [
+        {
+          id: 'hamlet-cp-1',
+          startTime: 0,
+          time: 2130, // 35:30
+          title: '1. Dějství: Duch na hradbách Elsinoru a přísaha pomsty',
+          summaryCz: `Na nočních hradbách dánského hradu Elsinor se strážím zjevuje přízrak zesnulého krále Hamleta. Horatio o vidění informuje prince Hamleta, který truchlí nad otcovou náhlou smrtí a znechuceně sleduje spěšnou svatbu své matky Gertrudy s královým bratrem Claudiem („Křehkosti, tvé jméno je žena“). Hamlet se v noci setká s duchem svého otce. Duch mu odhaluje děsivou pravdu: Claudius jej zákeřně zavraždil nalitím jedu (blínu) do ucha, když spal v zahradě. Duch žádá pomstu, ale zapovídá ublížit královně. Hamlet nutí Horatia a stráže odpřísáhnout mlčení na meč a oznamuje, že nasadí masku bláznovství („antic disposition“).`,
+          summaryEn: `On the freezing battlements of Elsinore, watchmen Bernardo and Marcellus witness the armored ghost of recently deceased King Hamlet. Horatio alerts Prince Hamlet, who is languishing in deep melancholy over his father's sudden death and the incestuous, hasty remarriage of Queen Gertrude to his uncle Claudius ("Frailty, thy name is woman"). Accompanying Horatio to the platform at midnight, Hamlet confronts the Ghost, who reveals the foul nature of his murder: Claudius poured juice of cursed hebona into his ears while he slept in the royal orchard. Pledging to avenge his father while sparing his mother, Hamlet swears Horatio to secrecy upon his sword and resolves to assume an "antic disposition."`,
+          vocabulary: [
+            { en: 'antic disposition', cz: 'předstírané / nasazené bláznovství' },
+            { en: 'frailty, thy name is woman', cz: 'křehkosti, tvé jméno je žena' },
+            { en: 'hebona / poison in the ear', cz: 'blín / jed nalitý do ucha' },
+            { en: 'foul and unnatural murder', cz: 'ohavná a nepřirozená vražda' },
+            { en: 'swear upon the sword', cz: 'přísahat na jílec meče' },
+            { en: 'something is rotten in the state of Denmark', cz: 'něco je shnilého v království dánském' }
+          ]
+        },
+        {
+          id: 'hamlet-cp-2',
+          startTime: 2130,
+          time: 4170, // 1:09:30
+          title: '2. Dějství: Předstírané šílenství, herci a léčka na krále',
+          summaryCz: `Polonius oznamuje králi, že Hamlet zešílel z neopětované lásky k jeho dceři Ofélii, které zakázal s princem mluvit. Claudius a Gertruda povolávají Hamletovy spolužáky Rosencrantze a Guildensterna, aby z prince vyzvěděli příčinu jeho stavu. Hamlet však jejich poslání okamžitě prohlédne. Na hrad přijíždí potulná herecká družina. Hamlet nechá jednoho z herců přednést vášnivý monolog o pádu Tróje a pláči Hekuby. Po odchodu herců se v samotě bičuje za svou váhavost a pasivitu („Co je mu po Hekubě, co on Hekubě, že pro ni pláče?“). Vymyslí plán: nechá herce sehrát hru Vražda Gonzaga s vloženými scénami odpovídajícími otcově vraždě, aby usvědčil Claudiovo svědomí („Hra je to osídlo, v němž polapím svědomí krále“).`,
+          summaryEn: `Polonius claims to King Claudius and Gertrude that Hamlet's erratic behavior stems from lovesickness for Ophelia. The monarchs summon university companions Rosencrantz and Guildenstern to spy on Hamlet, though the prince instantly discerns their mission. A traveling troupe of actors arrives at Elsinore. After an actor delivers a moving monologue on the slaughter of Priam and Hecuba's grief, Hamlet chastises himself in solitude for his paralyzing delay ("O, what a rogue and peasant slave am I! What's Hecuba to him, or he to Hecuba, that he should weep for her?"). Hamlet designs a trap: the players will perform The Murder of Gonzago with custom lines echoing King Hamlet's death to test Claudius's guilt ("The play's the thing wherein I'll catch the conscience of the King").`,
+          vocabulary: [
+            { en: 'what\'s Hecuba to him', cz: 'co je mu po Hekubě (monolog o hercově citu)' },
+            { en: 'catch the conscience of the King', cz: 'polapit svědomí krále v osidle hry' },
+            { en: 'rogue and peasant slave', cz: 'bídák a otrocký chudák' },
+            { en: 'spying courtier', cz: 'špehující dvořan (Polonius)' },
+            { en: 'The Murder of Gonzago', cz: 'Vražda Gonzagova (Past na myši)' },
+            { en: 'discerning the trap', cz: 'prohlédnutí léčky' }
+          ]
+        },
+        {
+          id: 'hamlet-cp-3',
+          startTime: 4170,
+          time: 6350, // 1:45:50
+          title: '3. Dějství: „Být či nebýt“, Past na myši a vražda za závěsem',
+          summaryCz: `Claudius a Polonius tajně nastraží Ofélii do cesty Hamletovi. Princ přichází se slavným monologem o životě a smrti („Být či nebýt, to je otázka...“). V následném krutém rozhovoru Ofélii odmítá a vyhání do kláštera („Jdi do kláštera!“). Večer herci před královským dvorem předvádějí vraždu nalitím jedu do ucha. Claudius v panice vstává, křičí po světle a přeruší hru. Hamlet má nezvratný důkaz viny. Claudius se na kolenou marně pokouší modlit, ale Hamlet ho neušetří z milosrdenství, nýbrž proto, že ho chce zabít při hříchu, aby šla jeho duše do pekla. V matčině komnatě Hamlet ostře vyčítá Gertrudě její zradu. Když uslyší šramot za gobelínem, v domnění, že je to král, tne mečem a zabije skrytého Polonia.`,
+          summaryEn: `Claudius and Polonius eavesdrop as Hamlet deliberates mortality, suicide, and dread of the unknown afterlife ("To be, or not to be, that is the question"). Confronted by Ophelia, Hamlet violently disavows his affection, hurling cynical denunciations of marriage ("Get thee to a nunnery"). At the court performance, the enacted poisoning strikes Claudius's conscience; the King leaps up in panic crying "Give me some light!" Hamlet finds Claudius attempting to pray, but refuses to strike him while confessing, wishing him damned in sin. In Gertrude's closet, Hamlet confronts his mother over her betrayal. Hearing a rustle behind the tapestry and suspecting Claudius, Hamlet thrusts his rapier through the arras, killing the concealed Polonius.`,
+          vocabulary: [
+            { en: 'to be or not to be', cz: 'být či nebýt (nejslavnější monolog)' },
+            { en: 'get thee to a nunnery', cz: 'jdi do kláštera (vypuzení Ofélie)' },
+            { en: 'give me some light', cz: 'dejte mi světlo (Claudiův útěk ze sálu)' },
+            { en: 'prayer and repentance', cz: 'modlitba a pokání bez lítosti' },
+            { en: 'closet scene', cz: 'scéna v matčině komnatě' },
+            { en: 'behind the arras', cz: 'za gobelínem / závěsem (vražda Polonia)' }
+          ]
+        },
+        {
+          id: 'hamlet-cp-4',
+          startTime: 6350,
+          time: 8040, // 2:14:00
+          title: '4. Dějství: Vyhnanství, Oféliino šílenství a Laertova pomsta',
+          summaryCz: `Claudius posílá Hamleta lodí do Anglie s tajnými zapečetěnými dopisy přikazujícími princovu okamžitou popravu. Hamlet však na lodi dopisy vymění za příkaz k popravě doručitelů Rosencrantze a Guildensterna a díky útoku pirátů uniká zpět do Dánska. Na Elsinoru mezitím ze žalu nad otcovou smrtí a Hamletovým odmítnutím propadá Ofélie naprostému šílenství; bloudí po hradě, zpívá tklivé písně a rozdává květiny. Ze zahraničí se v čele vzbouřeného davu vrací její bratr Laertes a žádá krev. Claudius obratně přesměruje Laertův hněv na Hamleta a navrhne zdánlivě přátelský šermířský souboj s naostřeným kordem potřeným jedem. Na závěr přichází královna Gertruda se zdrcující zprávou: ubohá Ofélie spadla do potoka a utopila se pod tíhou svých šatů.`,
+          summaryEn: `Claudius dispatches Hamlet to England with secret sealed letters instructing the English king to execute him immediately upon arrival. At sea, Hamlet discovers the treachery, rewrites the royal warrant to condemn Rosencrantz and Guildenstern instead, and escapes aboard a pirate ship back to Denmark. At Elsinore, grief drives Ophelia into poignant madness; she wanders the halls distributing symbolic herbs and wildflowers while singing haunting ballads. Laertes storms the palace at the head of a rebellion demanding vengeance for Polonius. Claudius manipulates Laertes' grief into a plot: a fencing match where Laertes will wield an unbated foil tipped with lethal poison. Queen Gertrude enters with heartrending news: Ophelia has drowned in a willow brook, pulled under by the weight of her water-soaked garments.`,
+          vocabulary: [
+            { en: 'sealed mandate', cz: 'zapečetěný rozkaz k popravě' },
+            { en: 'Ophelia\'s madness / flowers', cz: 'Oféliino šílenství / byliny a květy (rozmarýn, macešky)' },
+            { en: 'rebellion / vengeance', cz: 'vzpoura lidu / krevní msta' },
+            { en: 'unbated and envenomed foil', cz: 'naostřený kord potřený jedem' },
+            { en: 'poisoned chalice', cz: 'otrávená číše vína' },
+            { en: 'drowning in the brook', cz: 'utonutí v potoce u vrby' }
+          ]
+        },
+        {
+          id: 'hamlet-cp-5',
+          startTime: 8040,
+          time: 9380, // 2:36:20
+          title: '5. Dějství: Hrobaři, otrávený kord a tragický souboj („Ostatní je ticho“)',
+          summaryCz: `Na hřbitově dva hrobaři filozofují nad hrobem pro sebevražedkyni. Hamlet rozmlouvá s lebkou někdejšího dvorního šaška Yoricka („Běda, chudák Yorick! Znal jsem ho, Horatio...“). Pohřební průvod s Oféliiným tělem přeruší rvačka mezi Hamletem a Laertem v hrobě. Na hradě dochází k osudnému souboji. Claudius připraví pro Hamleta pohár otráveného vína, z něhož se však nevědomky napije královna Gertruda a umírá. Laertes zraní Hamleta otráveným hrotem, ale v zápalu boje si kordy vymění a Hamlet zraní Laerta jeho vlastní zbraní. Umírající Laertes odhalí králův komplot. Hamlet probodne Claudia otráveným mečem a donutí ho vypít zbytek jedu. V náručí Horatia Hamlet pronáší svá poslední slova: „Ostatní je ticho.“ Přichází norský princ Fortinbras a nařizuje královský pohřeb s vojenskými poctami pro padlého Hamleta.`,
+          summaryEn: `In a churchyard, two gravediggers banter while digging Ophelia's grave. Hamlet reflects on human mortality over the skull of the court jester ("Alas, poor Yorick! I knew him, Horatio: a fellow of infinite jest"). Ophelia's funeral procession arrives, sparking a violent brawl between Hamlet and Laertes in the open grave. At court, the rigged duel commences. Queen Gertrude unwittingly drinks from the poisoned cup prepared for Hamlet by Claudius and collapses dead. Laertes wounds Hamlet with the envenomed blade, but during a scuffle they exchange weapons and Hamlet wounds Laertes with his own poison. In dying agony, Laertes confesses the King's treason. Hamlet stabs Claudius and forces the rest of the poisoned wine down his throat. Dying, Hamlet prevents Horatio's suicide and whispers his final words: "The rest is silence." Fortinbras enters and orders royal military honors for Hamlet's funeral.`,
+          vocabulary: [
+            { en: 'alas, poor Yorick', cz: 'běda, chudák Yorick (monolog nad lebkou)' },
+            { en: 'gravedigger scene', cz: 'scéna hrobařů na hřbitově' },
+            { en: 'fencing match / exchanged weapons', cz: 'šermířský duel / vyměněné zbraně' },
+            { en: 'the rest is silence', cz: 'ostatní je ticho (Hamletova poslední slova)' },
+            { en: 'flight of angels', cz: 'chór andělů („kéž tě doprovodí k odpočinku“)' },
+            { en: 'funeral rites / military honors', cz: 'vojenské pocty a královský pohřeb' }
+          ]
+        }
+      ]
+    },
+
     '__default__': {
       title: 'Our Town',
       subtitlesUrl: 'https://raw.githubusercontent.com/Maaniaaa/ntathome-assistant/main/Our_Town.cs.vtt',
@@ -489,6 +877,22 @@
       document.title || ''
     ].join(' ').toLowerCase();
 
+    if (combinedUrl.includes('antigone')) {
+      return PLAYS_CONFIG['antigone'];
+    }
+
+    if (combinedUrl.includes('macbeth')) {
+      return PLAYS_CONFIG['macbeth'];
+    }
+
+    if (combinedUrl.includes('all-my-sons') || combinedUrl.includes('all_my_sons') || combinedUrl.includes('all my sons')) {
+      return PLAYS_CONFIG['all-my-sons'];
+    }
+
+    if (combinedUrl.includes('hamlet')) {
+      return PLAYS_CONFIG['hamlet'];
+    }
+
     if (combinedUrl.includes('seagull')) {
       return PLAYS_CONFIG['the-seagull'];
     }
@@ -510,6 +914,10 @@
 
   function getPlayKey(cfg) {
     if (!cfg || !cfg.title) return 'the-seagull';
+    if (cfg.title.includes('Antigone')) return 'antigone';
+    if (cfg.title.includes('Macbeth')) return 'macbeth';
+    if (cfg.title.includes('All My Sons')) return 'all-my-sons';
+    if (cfg.title.includes('Hamlet')) return 'hamlet';
     if (cfg.title.includes('Seagull')) return 'the-seagull';
     if (cfg.title.includes('Our Town')) return 'our-town';
     if (cfg.title.includes('Earnest')) return 'the-importance-of-being-earnest';
