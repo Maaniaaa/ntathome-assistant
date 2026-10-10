@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.7.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step a The Importance of Being Earnest s českými titulky, bilingvními shrnutími scén, opakováním sekcí a trvalou regulací rychlosti videa.
+// @version      1.7.1
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step a The Importance of Being Earnest s českými titulky, ochrana proti duplicitnímu vykreslování titulků, opakováním sekcí a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -785,10 +785,17 @@
     const videos = document.querySelectorAll('video');
     videos.forEach(v => {
       if (v.textTracks) {
+        let czTrackActivated = false;
         for (let i = 0; i < v.textTracks.length; i++) {
           const t = v.textTracks[i];
           if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
-            t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
+            // Striktně pouze JEDEN český track smí být aktivní (showing), ostatní duplikáty natvrdo vypneme
+            if (czSubtitlesEnabled && !czTrackActivated) {
+              t.mode = 'showing';
+              czTrackActivated = true;
+            } else {
+              t.mode = 'disabled';
+            }
           }
         }
       }
@@ -834,45 +841,68 @@
      7. INJEKCE WEBVTT TITULKŮ DO PŘEHRÁVAČE
      ========================================================================== */
 
+  let isInjectingSubtitles = false;
+
   async function injectSubtitlesTrack(video, subtitlesUrl) {
     if (!video || !subtitlesUrl) return;
-    const existingTrack = video.querySelector('track[data-nta-subs="true"]');
-    if (existingTrack && video.dataset.ntaSubsUrl === subtitlesUrl) return;
 
-    if (existingTrack) {
-      existingTrack.remove();
+    // Pokud už přesně tento track v DOM existuje, jen zkontrolujeme zobrazení
+    if (video.dataset.ntaSubsUrl === subtitlesUrl && video.querySelector('track[data-nta-subs="true"]')) {
+      applySubtitlesVisibility();
+      return;
     }
+
+    if (isInjectingSubtitles) return;
+    isInjectingSubtitles = true;
     video.dataset.ntaSubsUrl = subtitlesUrl;
 
-    let finalTrackSrc = subtitlesUrl;
-
     try {
-      const response = await fetch(subtitlesUrl, { mode: 'cors' });
-      if (response.ok) {
-        const vttContent = await response.text();
-        const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
-        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-        currentBlobUrl = URL.createObjectURL(vttBlob);
-        finalTrackSrc = currentBlobUrl;
+      let finalTrackSrc = subtitlesUrl;
+
+      try {
+        const response = await fetch(subtitlesUrl, { mode: 'cors' });
+        if (response.ok) {
+          const vttContent = await response.text();
+          const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
+          if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+          currentBlobUrl = URL.createObjectURL(vttBlob);
+          finalTrackSrc = currentBlobUrl;
+        }
+      } catch (e) {
+        finalTrackSrc = subtitlesUrl;
       }
-    } catch (e) {
-      finalTrackSrc = subtitlesUrl;
-    }
 
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.srclang = 'cs';
-    track.label = 'Čeština (Asistent)';
-    track.default = czSubtitlesEnabled;
-    track.src = finalTrackSrc;
-    track.setAttribute('data-nta-subs', 'true');
+      // Odstranit VŠECHNY stávající track elementy asistenta, aby nevznikaly duplikáty
+      const existingTracks = video.querySelectorAll('track[data-nta-subs="true"]');
+      existingTracks.forEach(t => t.remove());
 
-    track.addEventListener('load', () => {
+      // Vypnout všechny stávající české textTracks
+      if (video.textTracks) {
+        for (let i = 0; i < video.textTracks.length; i++) {
+          const t = video.textTracks[i];
+          if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
+            t.mode = 'disabled';
+          }
+        }
+      }
+
+      const track = document.createElement('track');
+      track.kind = 'subtitles';
+      track.srclang = 'cs';
+      track.label = 'Čeština (Asistent)';
+      track.default = czSubtitlesEnabled;
+      track.src = finalTrackSrc;
+      track.setAttribute('data-nta-subs', 'true');
+
+      track.addEventListener('load', () => {
+        applySubtitlesVisibility();
+      });
+
+      video.appendChild(track);
       applySubtitlesVisibility();
-    });
-
-    video.appendChild(track);
-    applySubtitlesVisibility();
+    } finally {
+      isInjectingSubtitles = false;
+    }
   }
 
   /* ==========================================================================
@@ -1403,11 +1433,13 @@
       // Synchronizace vybrané hry do iframů
       if (ev.data.type === 'NTA_SET_ACTIVE_PLAY') {
         if (ev.data.playKey && PLAYS_CONFIG[ev.data.playKey]) {
-          detectedPlayKey = ev.data.playKey;
-          const cfg = PLAYS_CONFIG[detectedPlayKey];
-          const v = activeVideoElement || document.querySelector('video');
-          if (v && cfg.subtitlesUrl) {
-            injectSubtitlesTrack(v, cfg.subtitlesUrl);
+          if (detectedPlayKey !== ev.data.playKey) {
+            detectedPlayKey = ev.data.playKey;
+            const cfg = PLAYS_CONFIG[detectedPlayKey];
+            const v = activeVideoElement || document.querySelector('video');
+            if (v && cfg.subtitlesUrl) {
+              injectSubtitlesTrack(v, cfg.subtitlesUrl);
+            }
           }
         }
       }
@@ -1425,13 +1457,17 @@
     setInterval(checkPlayer, 1000);
 
     if (window.self === window.top) {
+      let lastBroadcastKey = null;
       const broadcastPlayInfo = () => {
         const curConfig = getCurrentConfig();
         const key = curConfig && curConfig.title && curConfig.title.includes('Earnest') ? 'the-importance-of-being-earnest' : 'the-fifth-step';
-        broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
+        if (key !== lastBroadcastKey) {
+          lastBroadcastKey = key;
+          broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
+        }
       };
       broadcastPlayInfo();
-      setInterval(broadcastPlayInfo, 3000);
+      setInterval(broadcastPlayInfo, 2000);
     }
 
     let lastUrl = window.location.href;
