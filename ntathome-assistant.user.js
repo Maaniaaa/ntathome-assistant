@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent (The Fifth Step)
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      1.5.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): spolehlivé vypínání a posun titulků výše, regulace rychlosti videa, tlačítko pro zopakování sekce a bilingvní shrnutí děje.
+// @version      1.6.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): nastavitelná velikost a spolehlivé vypínání českých titulků, trvalá regulace rychlosti videa (0.85x, 0.9x), tlačítko pro zopakování sekce a bilingvní shrnutí děje.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -21,7 +21,7 @@
   'use strict';
 
   /* ==========================================================================
-     1. PŘEHLED HER A DATOVÁ STRUKTURA (POUZE THE FIFTH STEP)
+     1. PŘEHLED HER A DATOVÁ STRUKTURA (THE FIFTH STEP)
      ========================================================================== */
 
   const AVAILABLE_PLAYS = [
@@ -160,37 +160,24 @@
   let isOverlayOpen = false;
   let isDrawerOpen = false;
 
-  // Načtení uloženého nastavení z paměti
+  // Uložené předvolby
   let czSubtitlesEnabled = localStorage.getItem('nta_subs_enabled') !== '0';
   let targetPlaybackRate = parseFloat(localStorage.getItem('nta_playback_rate') || '1.0');
+  let currentSubtitleSize = localStorage.getItem('nta_sub_size') || '1.55rem'; // Výchozí: Velké (~25px)
   let activeSummaryLang = localStorage.getItem('nta_summary_lang') || 'cz';
 
   /* ==========================================================================
-     3. VÝBĚR KONFIGURACE (S PODPOROU IFRAMU A REFERRERU)
+     3. VÝBĚR KONFIGURACE
      ========================================================================== */
-
-  function getPageUrlString() {
-    let url = window.location.href.toLowerCase();
-    try {
-      if (window.top && window.top.location && window.top.location.href) {
-        url = window.top.location.href.toLowerCase();
-      }
-    } catch (e) {}
-    if (document.referrer) {
-      url += ' ' + document.referrer.toLowerCase();
-    }
-    return url;
-  }
 
   function getCurrentConfig() {
     return PLAYS_CONFIG['the-fifth-step'];
   }
 
   /* ==========================================================================
-     4. MEZIRÁMCOVÁ KOMUNIKACE (POSTMESSAGE PROPOJENÍ S IFRAMEM PŘEHRÁVAČE)
+     4. MEZIRÁMCOVÁ KOMUNIKACE (POSTMESSAGE)
      ========================================================================== */
 
-  /** Rozešle zprávu do všech iframů na stránce */
   function broadcastToFrames(msg) {
     const iframes = document.querySelectorAll('iframe');
     for (const f of iframes) {
@@ -203,7 +190,7 @@
   }
 
   /* ==========================================================================
-     5. STYLY (TITULKY VÝŠE, DESIGN PŘEHRÁVAČE, DARK MODE & DRAWER)
+     5. STYLY (TITULKY VÝŠE, NASTAVITELNÁ VELIKOST, DARK MODE)
      ========================================================================== */
 
   const STYLE_ID = 'nta-assistant-styles';
@@ -215,19 +202,18 @@
     styleEl.id = STYLE_ID;
     styleEl.textContent = `
       /* =========================================================
-         POSUNUTÍ TITULKŮ VÝŠE & STYLING TEXTU
+         POSUNUTÍ TITULKŮ VÝŠE & ZÁKLADNÍ DESIGN
          ========================================================= */
       video::-webkit-media-text-track-display {
-        transform: translateY(-35px) !important; /* Posun titulků o 35px výše */
+        transform: translateY(-38px) !important; /* Posun o 38px výše nad lištu */
       }
       ::cue {
-        font-size: 1.18rem !important;
-        background-color: rgba(15, 23, 42, 0.90) !important;
+        background-color: rgba(15, 23, 42, 0.92) !important;
         color: #f8fafc !important;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
         line-height: 1.45 !important;
-        padding: 5px 14px !important;
-        border-radius: 6px !important;
+        padding: 6px 16px !important;
+        border-radius: 8px !important;
       }
 
       /* Úplné skrytí titulků při vypnutí */
@@ -238,10 +224,12 @@
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
+        height: 0 !important;
+        font-size: 0 !important;
       }
 
       /* =========================================================
-         PLOVOUCÍ OVLÁDACÍ PANEL V PRAVÉM DOLNÍM ROHU
+         PLOVOUCÍ OVLÁDACÍ PANEL
          ========================================================= */
       #nta-floating-widget {
         position: fixed;
@@ -287,7 +275,7 @@
         position: absolute;
         bottom: 50px;
         right: 0;
-        width: 320px;
+        width: 325px;
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 16px;
@@ -295,7 +283,7 @@
         padding: 16px;
         display: none;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
       }
       .nta-drawer.nta-open {
         display: flex;
@@ -351,11 +339,11 @@
         color: #cbd5e1;
       }
 
-      .nta-speed-btns {
+      .nta-btn-group {
         display: flex;
         gap: 4px;
       }
-      .nta-speed-btn {
+      .nta-group-btn {
         background: #334155;
         color: #e2e8f0;
         border: none;
@@ -365,7 +353,7 @@
         cursor: pointer;
         font-weight: 600;
       }
-      .nta-speed-btn.nta-active {
+      .nta-group-btn.nta-active {
         background: #38bdf8;
         color: #0f172a;
         font-weight: 800;
@@ -636,16 +624,30 @@
       }
     `;
     document.head.appendChild(styleEl);
+    applySubtitleSizeStyles(currentSubtitleSize);
+  }
+
+  function applySubtitleSizeStyles(size) {
+    let sizeStyle = document.getElementById('nta-dynamic-cue-size');
+    if (!sizeStyle) {
+      sizeStyle = document.createElement('style');
+      sizeStyle.id = 'nta-dynamic-cue-size';
+      (document.head || document.documentElement).appendChild(sizeStyle);
+    }
+    sizeStyle.textContent = `
+      ::cue, video::cue {
+        font-size: ${size} !important;
+      }
+    `;
   }
 
   /* ==========================================================================
-     6. OVLÁDÁNÍ TITULKŮ A RYCHLOSTI PŘEHRÁVÁNÍ (SYNCHRONIZACE MEZI OKNY)
+     6. OVLÁDÁNÍ TITULKŮ, VELIKOSTI A RYCHLOSTI VIDEA
      ========================================================================== */
 
   function applySubtitlesVisibility() {
     injectStyles();
 
-    // 1. Globální CSS pravidlo v DOMu (okamžitě skryje veškerý text titulků)
     if (czSubtitlesEnabled) {
       document.documentElement.classList.remove('nta-hide-subs');
       if (document.body) document.body.classList.remove('nta-hide-subs');
@@ -654,43 +656,51 @@
       if (document.body) document.body.classList.add('nta-hide-subs');
     }
 
-    // 2. Přepnutí stopy v přehrávači
-    if (activeVideoElement && activeVideoElement.textTracks) {
-      for (let i = 0; i < activeVideoElement.textTracks.length; i++) {
-        const t = activeVideoElement.textTracks[i];
-        if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
-          t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
+    const videos = document.querySelectorAll('video');
+    videos.forEach(v => {
+      if (v.textTracks) {
+        for (let i = 0; i < v.textTracks.length; i++) {
+          const t = v.textTracks[i];
+          if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
+            t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
+          }
         }
       }
-    }
+    });
   }
 
   function toggleSubtitles() {
     czSubtitlesEnabled = !czSubtitlesEnabled;
     localStorage.setItem('nta_subs_enabled', czSubtitlesEnabled ? '1' : '0');
 
-    // Aplikovat lokálně
     applySubtitlesVisibility();
-
-    // Odeslat příkaz do všech iframů (pokud jsme v hlavním okně)
     broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
-
-    // Aktualizovat vzhled tlačítka v menu
     updateDrawerUI();
+  }
+
+  function setSubtitleSize(size) {
+    currentSubtitleSize = size;
+    localStorage.setItem('nta_sub_size', size);
+
+    applySubtitleSizeStyles(size);
+    broadcastToFrames({ type: 'NTA_SET_SUBTITLE_SIZE', size: size });
+    updateDrawerUI();
+  }
+
+  function applyRateToAllVideos(rate) {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(v => {
+      v.playbackRate = rate;
+      v.defaultPlaybackRate = rate;
+    });
   }
 
   function setPlaybackRate(rate) {
     targetPlaybackRate = rate;
     localStorage.setItem('nta_playback_rate', rate.toString());
 
-    // Aplikovat lokálně
-    if (activeVideoElement) {
-      activeVideoElement.playbackRate = rate;
-    }
-
-    // Odeslat do iframů
+    applyRateToAllVideos(rate);
     broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: rate });
-
     updateDrawerUI();
   }
 
@@ -734,7 +744,7 @@
   }
 
   /* ==========================================================================
-     8. PŘEKRYVNÉ ROZHRANÍ (OVERLAY UI) S BILINGVNÍM TEXTEM A OPAKOVÁNÍM
+     8. PŘEKRYVNÉ ROZHRANÍ (OVERLAY UI)
      ========================================================================== */
 
   let overlayContainer = null;
@@ -805,7 +815,6 @@
     tabCz.addEventListener('click', () => switchSummaryLang('cz'));
     tabEn.addEventListener('click', () => switchSummaryLang('en'));
 
-    // Kopírování do schránky
     overlayContainer.querySelector('#nta-btn-copy-anki').addEventListener('click', (e) => {
       if (!currentActiveCheckpoint || !currentActiveCheckpoint.vocabulary) return;
       const tsv = currentActiveCheckpoint.vocabulary.map(v => `${v.en}\t${v.cz}`).join('\n');
@@ -815,7 +824,6 @@
       });
     });
 
-    // Pustit sekci znovu
     overlayContainer.querySelector('#nta-btn-replay').addEventListener('click', () => {
       if (!currentActiveCheckpoint) return;
       const replayTime = currentActiveCheckpoint.startTime || 0;
@@ -828,7 +836,6 @@
         activeVideoElement.play().catch(() => {});
       }
 
-      // Propojení s iframem přehrávače
       broadcastToFrames({
         type: 'NTA_REPLAY_SECTION',
         startTime: replayTime,
@@ -838,7 +845,6 @@
       resumePlayback();
     });
 
-    // Pokračovat
     overlayContainer.querySelector('#nta-btn-resume').addEventListener('click', resumePlayback);
 
     window.addEventListener('keydown', (e) => {
@@ -972,7 +978,6 @@
         triggeredCheckpoints.add(checkpointKey);
         video.pause();
 
-        // Odeslat požadavek na zobrazení do hlavního okna (pokud jsme v iframe)
         if (window.self !== window.top) {
           try {
             window.top.postMessage({ type: 'NTA_SHOW_OVERLAY', checkpoint: cp }, '*');
@@ -986,7 +991,7 @@
   }
 
   /* ==========================================================================
-     10. OVLÁDACÍ PANEL & PŘEHLED HER (V HLAVNÍM OKNĚ)
+     10. OVLÁDACÍ PANEL V HLAVNÍM OKNĚ
      ========================================================================== */
 
   let floatingWidgetEl = null;
@@ -1025,13 +1030,23 @@
           </button>
         </div>
 
+        <!-- Velikost titulků -->
+        <div class="nta-control-row">
+          <span>Velikost titulků:</span>
+          <div class="nta-btn-group" id="nta-size-btns">
+            <button type="button" class="nta-group-btn" data-size="1.25rem">Střední</button>
+            <button type="button" class="nta-group-btn nta-active" data-size="1.55rem">Velké ★</button>
+            <button type="button" class="nta-group-btn" data-size="1.95rem">Extra</button>
+          </div>
+        </div>
+
         <!-- Rychlost přehrávání -->
         <div class="nta-control-row">
           <span>Rychlost videa:</span>
-          <div class="nta-speed-btns">
-            <button type="button" class="nta-speed-btn" data-rate="0.85">0.85×</button>
-            <button type="button" class="nta-speed-btn" data-rate="0.9">0.9×</button>
-            <button type="button" class="nta-speed-btn nta-active" data-rate="1">1.0×</button>
+          <div class="nta-btn-group" id="nta-speed-btns">
+            <button type="button" class="nta-group-btn" data-rate="0.85">0.85×</button>
+            <button type="button" class="nta-group-btn" data-rate="0.9">0.9×</button>
+            <button type="button" class="nta-group-btn nta-active" data-rate="1">1.0×</button>
           </div>
         </div>
 
@@ -1072,7 +1087,14 @@
 
     floatingWidgetEl.querySelector('#nta-btn-toggle-subs').addEventListener('click', toggleSubtitles);
 
-    floatingWidgetEl.querySelectorAll('.nta-speed-btn').forEach(btn => {
+    floatingWidgetEl.querySelectorAll('#nta-size-btns .nta-group-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const size = btn.getAttribute('data-size');
+        setSubtitleSize(size);
+      });
+    });
+
+    floatingWidgetEl.querySelectorAll('#nta-speed-btns .nta-group-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const rate = parseFloat(btn.getAttribute('data-rate'));
         setPlaybackRate(rate);
@@ -1085,14 +1107,22 @@
   function updateDrawerUI() {
     if (!floatingWidgetEl) return;
 
+    // Titulky
     const subsBtn = floatingWidgetEl.querySelector('#nta-btn-toggle-subs');
     if (subsBtn) {
       subsBtn.textContent = czSubtitlesEnabled ? 'Zapnuto ✓' : 'Vypnuto ✕';
       subsBtn.classList.toggle('nta-off', !czSubtitlesEnabled);
     }
 
+    // Velikost
+    floatingWidgetEl.querySelectorAll('#nta-size-btns .nta-group-btn').forEach(btn => {
+      const size = btn.getAttribute('data-size');
+      btn.classList.toggle('nta-active', size === currentSubtitleSize);
+    });
+
+    // Rychlost
     const currentRate = targetPlaybackRate;
-    floatingWidgetEl.querySelectorAll('.nta-speed-btn').forEach(btn => {
+    floatingWidgetEl.querySelectorAll('#nta-speed-btns .nta-group-btn').forEach(btn => {
       const rate = parseFloat(btn.getAttribute('data-rate'));
       btn.classList.toggle('nta-active', Math.abs(rate - currentRate) < 0.02);
     });
@@ -1126,17 +1156,19 @@
     const config = getCurrentConfig();
     updateStatusPill(true);
 
-    // Nastavení uložené rychlosti
-    if (targetPlaybackRate !== 1.0) {
-      video.playbackRate = targetPlaybackRate;
-    }
-
-    // Udržení nastavené rychlosti i když se player pokusí přepsat
-    video.addEventListener('ratechange', () => {
+    // Trvalé vynucení rychlosti videa
+    const enforceSpeed = () => {
       if (targetPlaybackRate !== 1.0 && Math.abs(video.playbackRate - targetPlaybackRate) > 0.02) {
         video.playbackRate = targetPlaybackRate;
+        video.defaultPlaybackRate = targetPlaybackRate;
       }
-    });
+    };
+
+    enforceSpeed();
+    video.addEventListener('play', enforceSpeed);
+    video.addEventListener('playing', enforceSpeed);
+    video.addEventListener('ratechange', enforceSpeed);
+    video.addEventListener('loadeddata', enforceSpeed);
 
     if (window.self !== window.top) {
       try {
@@ -1159,6 +1191,11 @@
     const video = document.querySelector('video');
     if (video) {
       attachToVideo(video);
+      // Pokud je nastavena rychlost, zajistíme ji
+      if (targetPlaybackRate !== 1.0 && Math.abs(video.playbackRate - targetPlaybackRate) > 0.02) {
+        video.playbackRate = targetPlaybackRate;
+        video.defaultPlaybackRate = targetPlaybackRate;
+      }
     }
   }
 
@@ -1166,40 +1203,51 @@
     window.addEventListener('message', (ev) => {
       if (!ev.data) return;
 
-      // Synchronizace titulků z ovládacího panelu
+      // Titulky
       if (ev.data.type === 'NTA_SET_SUBTITLES') {
         czSubtitlesEnabled = ev.data.enabled;
         applySubtitlesVisibility();
+        broadcastToFrames(ev.data);
       }
 
-      // Synchronizace rychlosti videa
+      // Velikost titulků
+      if (ev.data.type === 'NTA_SET_SUBTITLE_SIZE') {
+        currentSubtitleSize = ev.data.size;
+        applySubtitleSizeStyles(ev.data.size);
+        broadcastToFrames(ev.data);
+      }
+
+      // Rychlost videa
       if (ev.data.type === 'NTA_SET_PLAYBACK_RATE') {
         targetPlaybackRate = ev.data.rate;
-        if (activeVideoElement) {
-          activeVideoElement.playbackRate = targetPlaybackRate;
-        }
+        applyRateToAllVideos(targetPlaybackRate);
+        broadcastToFrames(ev.data);
       }
 
-      // Opakování sekce odeslané z modálního okna
+      // Opakování sekce
       if (ev.data.type === 'NTA_REPLAY_SECTION') {
         if (ev.data.checkpointId) {
           triggeredCheckpoints.delete(ev.data.checkpointId);
         }
-        if (activeVideoElement) {
-          activeVideoElement.currentTime = ev.data.startTime;
-          activeVideoElement.play().catch(() => {});
+        const v = activeVideoElement || document.querySelector('video');
+        if (v) {
+          v.currentTime = ev.data.startTime;
+          v.play().catch(() => {});
         }
+        broadcastToFrames(ev.data);
       }
 
-      // Pokračování ve sledování
+      // Pokračování
       if (ev.data.type === 'NTA_RESUME_PLAYBACK') {
         if (overlayContainer) {
           overlayContainer.classList.remove('nta-visible');
         }
         isOverlayOpen = false;
-        if (activeVideoElement && typeof activeVideoElement.play === 'function') {
-          activeVideoElement.play().catch(() => {});
+        const v = activeVideoElement || document.querySelector('video');
+        if (v && typeof v.play === 'function') {
+          v.play().catch(() => {});
         }
+        broadcastToFrames(ev.data);
       }
 
       // Zobrazení overlay v hlavním okně vyvolané z iframe
@@ -1222,10 +1270,8 @@
     renderFloatingWidget(config);
     checkPlayer();
 
-    // Kontrola existence přehrávače každou sekundu
     setInterval(checkPlayer, 1000);
 
-    // Detekce navigace v SPA
     let lastUrl = window.location.href;
     setInterval(() => {
       if (window.location.href !== lastUrl) {
