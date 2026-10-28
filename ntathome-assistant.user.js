@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      2.3.1
+// @version      2.3.2
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken, novými velkými režimy titulků pro TV (HDMI na televizi) a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -943,7 +943,12 @@
     if (key && PLAYS_CONFIG[key]) {
       return PLAYS_CONFIG[key];
     }
-    return PLAYS_CONFIG['the-seagull'] || PLAYS_CONFIG['our-town'];
+    // V hlavním okně použijeme první rozpoznanou hru, ale v iframu NIKDY
+    // nevkládáme naslepo náhodnou hru, dokud iframe neobdrží klíč od rodiče!
+    if (window.self === window.top) {
+      return PLAYS_CONFIG['hamlet'] || PLAYS_CONFIG['the-seagull'] || PLAYS_CONFIG['our-town'];
+    }
+    return null;
   }
 
   function getPlayKey(cfg) {
@@ -2231,13 +2236,19 @@
     if (window.self !== window.top) {
       try {
         window.top.postMessage({ type: 'NTA_VIDEO_ATTACHED' }, '*');
+        window.top.postMessage({ type: 'NTA_REQUEST_ACTIVE_PLAY' }, '*');
       } catch (e) {}
     }
 
-    if (config.subtitlesUrl) {
+    if (config && config.subtitlesUrl) {
       injectSubtitlesTrack(video, config.subtitlesUrl);
     } else {
       applySubtitlesVisibility();
+      if (window.self !== window.top) {
+        try {
+          window.top.postMessage({ type: 'NTA_REQUEST_ACTIVE_PLAY' }, '*');
+        } catch (e) {}
+      }
     }
 
     video.addEventListener('timeupdate', () => {
@@ -2319,17 +2330,24 @@
         showOverlay(ev.data.checkpoint, null);
       }
 
-      // Detekce přehrávače
-      if (ev.data.type === 'NTA_VIDEO_ATTACHED') {
-        updateStatusPill(true);
+      // Žádost o aktivní hru nebo oznámení o připojení videa
+      if (ev.data.type === 'NTA_REQUEST_ACTIVE_PLAY' || ev.data.type === 'NTA_VIDEO_ATTACHED') {
+        if (ev.data.type === 'NTA_VIDEO_ATTACHED') {
+          updateStatusPill(true);
+        }
         if (window.self === window.top) {
           const curConfig = getCurrentConfig();
           const key = getPlayKey(curConfig);
+          if (ev.source && typeof ev.source.postMessage === 'function') {
+            try {
+              ev.source.postMessage({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key }, '*');
+              ev.source.postMessage({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled }, '*');
+              ev.source.postMessage({ type: 'NTA_SET_CHECKPOINTS', enabled: checkpointsEnabled }, '*');
+              ev.source.postMessage({ type: 'NTA_SET_PLAYBACK_RATE', rate: targetPlaybackRate }, '*');
+              ev.source.postMessage({ type: 'NTA_SET_SUBTITLE_SIZE', size: currentSubtitleSize }, '*');
+            } catch (e) {}
+          }
           broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
-          broadcastToFrames({ type: 'NTA_SET_SUBTITLES', enabled: czSubtitlesEnabled });
-          broadcastToFrames({ type: 'NTA_SET_CHECKPOINTS', enabled: checkpointsEnabled });
-          broadcastToFrames({ type: 'NTA_SET_PLAYBACK_RATE', rate: targetPlaybackRate });
-          broadcastToFrames({ type: 'NTA_SET_SUBTITLE_SIZE', size: currentSubtitleSize });
         }
       }
 
@@ -2361,17 +2379,26 @@
     setInterval(checkPlayer, 1000);
 
     if (window.self === window.top) {
-      let lastBroadcastKey = null;
       const broadcastPlayInfo = () => {
         const curConfig = getCurrentConfig();
         const key = getPlayKey(curConfig);
-        if (key !== lastBroadcastKey) {
-          lastBroadcastKey = key;
+        if (key) {
           broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
         }
       };
       broadcastPlayInfo();
-      setInterval(broadcastPlayInfo, 2000);
+      setInterval(broadcastPlayInfo, 1200);
+    } else {
+      // V iframu aktivně žádáme rodiče o aktuální hru, dokud není potvrzena
+      const reqInterval = setInterval(() => {
+        if (detectedPlayKey) {
+          clearInterval(reqInterval);
+        } else {
+          try {
+            window.top.postMessage({ type: 'NTA_REQUEST_ACTIVE_PLAY' }, '*');
+          } catch (e) {}
+        }
+      }, 500);
     }
 
     let lastUrl = window.location.href;
