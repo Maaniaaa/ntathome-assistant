@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      2.3.0
+// @version      2.3.1
 // @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken, novými velkými režimy titulků pro TV (HDMI na televizi) a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
@@ -869,65 +869,91 @@
   let activeSummaryLang = localStorage.getItem('nta_summary_lang') || 'cz';
 
   /* ==========================================================================
-     3. VÝBĚR KONFIGURACE
+     3. VÝBĚR KONFIGURACE (SPRAVNÁ DETEKCE HRY BEZ ZAMĚNY)
      ========================================================================== */
 
-  function getCurrentConfig() {
+  const PLAY_MATCHERS = [
+    { key: 'the-seagull', patterns: ['the-seagull', 'the_seagull', 'seagull', 'racek'] },
+    { key: 'antigone', patterns: ['antigone', 'antigona'] },
+    { key: 'macbeth', patterns: ['macbeth'] },
+    { key: 'all-my-sons', patterns: ['all-my-sons', 'all_my_sons', 'all my sons'] },
+    { key: 'hamlet', patterns: ['hamlet'] },
+    { key: 'our-town', patterns: ['our-town', 'our_town', 'our town'] },
+    { key: 'the-importance-of-being-earnest', patterns: ['the-importance-of-being-earnest', 'importance-of-being-earnest', 'earnest'] },
+    { key: 'the-fifth-step', patterns: ['the-fifth-step', 'fifth-step'] }
+  ];
+
+  function matchPlayKey(str) {
+    if (!str || typeof str !== 'string') return null;
+    const lower = str.toLowerCase();
+    for (const item of PLAY_MATCHERS) {
+      for (const pat of item.patterns) {
+        if (lower.includes(pat)) {
+          return item.key;
+        }
+      }
+    }
+    return null;
+  }
+
+  function detectCurrentPlayKey() {
+    // 1. Explicitně nastavený a synchronizovaný klíč (např. z postMessage)
     if (detectedPlayKey && PLAYS_CONFIG[detectedPlayKey]) {
-      return PLAYS_CONFIG[detectedPlayKey];
+      return detectedPlayKey;
     }
 
-    const combinedUrl = [
-      window.location.href,
-      document.referrer || '',
-      document.title || ''
-    ].join(' ').toLowerCase();
+    if (window.self === window.top) {
+      // 2. V hlavním okně (top frame):
+      // Zkoumáme POUZE aktuální adresu a titulek. NIKDY nesmíme použít document.referrer,
+      // protože ten ukazuje předchozí navštívenou stránku (např. Antigonu před Rackem)!
+      const fromPath = matchPlayKey(window.location.pathname);
+      if (fromPath) return fromPath;
 
-    if (combinedUrl.includes('antigone')) {
-      return PLAYS_CONFIG['antigone'];
+      const fromHref = matchPlayKey(window.location.href);
+      if (fromHref) return fromHref;
+
+      const fromTitle = matchPlayKey(document.title);
+      if (fromTitle) return fromTitle;
+
+      const titleEl = document.querySelector('h1, h2, .video-title, [class*="video-title"], [data-testid="video-title"]');
+      if (titleEl && titleEl.textContent) {
+        const fromHeading = matchPlayKey(titleEl.textContent);
+        if (fromHeading) return fromHeading;
+      }
+    } else {
+      // 3. V iframu (embed přehrávač Vimeo OTT / embed.vhx.tv):
+      const fromIframePath = matchPlayKey(window.location.pathname);
+      if (fromIframePath) return fromIframePath;
+
+      const fromIframeHref = matchPlayKey(window.location.href);
+      if (fromIframeHref) return fromIframeHref;
+
+      // V iframu je document.referrer adresa mateřské stránky (např. https://www.ntathome.com/videos/the-seagull-full-play)
+      if (document.referrer) {
+        const fromParent = matchPlayKey(document.referrer);
+        if (fromParent) return fromParent;
+      }
     }
 
-    if (combinedUrl.includes('macbeth')) {
-      return PLAYS_CONFIG['macbeth'];
-    }
+    return null;
+  }
 
-    if (combinedUrl.includes('all-my-sons') || combinedUrl.includes('all_my_sons') || combinedUrl.includes('all my sons')) {
-      return PLAYS_CONFIG['all-my-sons'];
+  function getCurrentConfig() {
+    const key = detectCurrentPlayKey();
+    if (key && PLAYS_CONFIG[key]) {
+      return PLAYS_CONFIG[key];
     }
-
-    if (combinedUrl.includes('hamlet')) {
-      return PLAYS_CONFIG['hamlet'];
-    }
-
-    if (combinedUrl.includes('seagull')) {
-      return PLAYS_CONFIG['the-seagull'];
-    }
-
-    if (combinedUrl.includes('our-town') || combinedUrl.includes('our_town') || combinedUrl.includes('our town')) {
-      return PLAYS_CONFIG['our-town'];
-    }
-
-    if (combinedUrl.includes('earnest') || combinedUrl.includes('importance-of-being-earnest')) {
-      return PLAYS_CONFIG['the-importance-of-being-earnest'];
-    }
-
-    if (combinedUrl.includes('fifth-step') || combinedUrl.includes('the-fifth-step')) {
-      return PLAYS_CONFIG['the-fifth-step'];
-    }
-
     return PLAYS_CONFIG['the-seagull'] || PLAYS_CONFIG['our-town'];
   }
 
   function getPlayKey(cfg) {
-    if (!cfg || !cfg.title) return 'the-seagull';
-    if (cfg.title.includes('Antigone')) return 'antigone';
-    if (cfg.title.includes('Macbeth')) return 'macbeth';
-    if (cfg.title.includes('All My Sons')) return 'all-my-sons';
-    if (cfg.title.includes('Hamlet')) return 'hamlet';
-    if (cfg.title.includes('Seagull')) return 'the-seagull';
-    if (cfg.title.includes('Our Town')) return 'our-town';
-    if (cfg.title.includes('Earnest')) return 'the-importance-of-being-earnest';
-    return 'the-fifth-step';
+    if (!cfg) return 'the-seagull';
+    for (const [key, val] of Object.entries(PLAYS_CONFIG)) {
+      if (val === cfg || (cfg.title && val.title === cfg.title)) {
+        return key;
+      }
+    }
+    return 'the-seagull';
   }
 
   /* ==========================================================================
@@ -1562,18 +1588,18 @@
 
     const videos = document.querySelectorAll('video');
     videos.forEach(v => {
+      const activeTrackEl = v.querySelector('track[data-nta-subs="true"]');
+      const activeTextTrack = activeTrackEl ? activeTrackEl.track : null;
+
       if (v.textTracks) {
-        let czTrackActivated = false;
         for (let i = 0; i < v.textTracks.length; i++) {
           const t = v.textTracks[i];
-          if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
-            // Striktně pouze JEDEN český track smí být aktivní (showing), ostatní duplikáty natvrdo vypneme
-            if (czSubtitlesEnabled && !czTrackActivated) {
-              t.mode = 'showing';
-              czTrackActivated = true;
-            } else {
-              t.mode = 'disabled';
-            }
+          if (activeTextTrack && t === activeTextTrack) {
+            // Pouze TENTO konkrétní aktivní track asistenta smí být showing
+            t.mode = czSubtitlesEnabled ? 'showing' : 'disabled';
+          } else if (t.language === 'cs' || (t.label && t.label.includes('Čeština'))) {
+            // Všechny ostatní (staré, duplicitní nebo osiřelé) české textTracks natvrdo vypnout
+            t.mode = 'disabled';
           }
         }
       }
@@ -1632,7 +1658,7 @@
   async function injectSubtitlesTrack(video, subtitlesUrl) {
     if (!video || !subtitlesUrl) return;
 
-    // Pokud už přesně tento track v DOM existuje, jen zkontrolujeme zobrazení
+    // Pokud už přesně tento track v DOM existuje se stejným URL, jen zkontrolujeme zobrazení
     if (video.dataset.ntaSubsUrl === subtitlesUrl && video.querySelector('track[data-nta-subs="true"]')) {
       applySubtitlesVisibility();
       return;
@@ -1640,29 +1666,18 @@
 
     if (isInjectingSubtitles) return;
     isInjectingSubtitles = true;
-    video.dataset.ntaSubsUrl = subtitlesUrl;
 
     try {
-      let finalTrackSrc = subtitlesUrl;
-
-      try {
-        const response = await fetch(subtitlesUrl, { mode: 'cors' });
-        if (response.ok) {
-          const vttContent = await response.text();
-          const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
-          if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-          currentBlobUrl = URL.createObjectURL(vttBlob);
-          finalTrackSrc = currentBlobUrl;
-        }
-      } catch (e) {
-        finalTrackSrc = subtitlesUrl;
-      }
-
-      // Odstranit VŠECHNY stávající track elementy asistenta, aby nevznikaly duplikáty
+      // 1. Odstranit a vypnout všechny stávající track elementy asistenta
       const existingTracks = video.querySelectorAll('track[data-nta-subs="true"]');
-      existingTracks.forEach(t => t.remove());
+      existingTracks.forEach(t => {
+        try {
+          if (t.track) t.track.mode = 'disabled';
+        } catch (e) {}
+        t.remove();
+      });
 
-      // Vypnout všechny stávající české textTracks
+      // 2. Vypnout všechny stávající české textTracks v přehrávači
       if (video.textTracks) {
         for (let i = 0; i < video.textTracks.length; i++) {
           const t = video.textTracks[i];
@@ -1672,6 +1687,22 @@
         }
       }
 
+      // 3. Stáhnout a připravit nový Blob
+      let finalTrackSrc = subtitlesUrl;
+      try {
+        const response = await fetch(subtitlesUrl, { mode: 'cors' });
+        if (response.ok) {
+          const vttContent = await response.text();
+          const vttBlob = new Blob([vttContent], { type: 'text/vtt;charset=utf-8' });
+          if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+          currentBlobUrl = URL.createObjectURL(vttBlob);
+          finalTrackSrc = currentBlobUrl;
+        }
+      } catch (e) {
+        finalTrackSrc = subtitlesUrl;
+      }
+
+      // 4. Vytvořit nový track element
       const track = document.createElement('track');
       track.kind = 'subtitles';
       track.srclang = 'cs';
@@ -1685,7 +1716,11 @@
       });
 
       video.appendChild(track);
+      video.dataset.ntaSubsUrl = subtitlesUrl;
+
       applySubtitlesVisibility();
+      setTimeout(applySubtitlesVisibility, 150);
+      setTimeout(applySubtitlesVisibility, 600);
     } finally {
       isInjectingSubtitles = false;
     }
@@ -2020,7 +2055,7 @@
           <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
             🎬 Hry s českými titulky:
           </div>
-          <div class="nta-plays-list">
+          <div class="nta-plays-list" id="nta-plays-list">
             ${playsListHtml}
           </div>
         </div>
@@ -2105,6 +2140,38 @@
       cpBtn.classList.toggle('nta-off', !checkpointsEnabled);
     }
 
+    // Titulek aktuální hry na widgetu
+    const curCfg = getCurrentConfig();
+    const pillText = floatingWidgetEl.querySelector('#nta-pill-text');
+    if (pillText && curCfg && curCfg.title) {
+      pillText.textContent = curCfg.title;
+    }
+
+    // Zvýraznění aktivní hry v katalogu
+    const activeKey = getPlayKey(curCfg);
+    const playItems = floatingWidgetEl.querySelectorAll('.nta-play-item');
+    playItems.forEach(item => {
+      const href = item.getAttribute('href') || '';
+      const itemKey = matchPlayKey(href);
+      const isCurrent = itemKey === activeKey;
+      item.classList.toggle('nta-play-item-active', isCurrent);
+      const titleSpan = item.querySelector('.nta-play-item-title span:first-child');
+      const badgeSpan = item.querySelector('.nta-play-item-badge');
+      const orig = AVAILABLE_PLAYS.find(p => p.key === itemKey);
+      if (badgeSpan) {
+        if (isCurrent) {
+          badgeSpan.textContent = 'Právě hraje';
+          badgeSpan.classList.add('nta-badge-active');
+        } else {
+          badgeSpan.textContent = orig ? orig.badge : 'Připraveno';
+          badgeSpan.classList.remove('nta-badge-active');
+        }
+      }
+      if (titleSpan && orig) {
+        titleSpan.textContent = isCurrent ? `${orig.title} ✓` : orig.title;
+      }
+    });
+
     // Velikost
     floatingWidgetEl.querySelectorAll('#nta-size-btns .nta-group-btn').forEach(btn => {
       const size = btn.getAttribute('data-size');
@@ -2174,7 +2241,7 @@
     }
 
     video.addEventListener('timeupdate', () => {
-      handleTimeUpdate(video, config);
+      handleTimeUpdate(video, getCurrentConfig());
     });
   }
 
@@ -2269,11 +2336,12 @@
       // Synchronizace vybrané hry do iframů
       if (ev.data.type === 'NTA_SET_ACTIVE_PLAY') {
         if (ev.data.playKey && PLAYS_CONFIG[ev.data.playKey]) {
-          if (detectedPlayKey !== ev.data.playKey) {
-            detectedPlayKey = ev.data.playKey;
-            const cfg = PLAYS_CONFIG[detectedPlayKey];
-            const v = activeVideoElement || document.querySelector('video');
-            if (v && cfg.subtitlesUrl) {
+          const isKeyChanged = detectedPlayKey !== ev.data.playKey;
+          detectedPlayKey = ev.data.playKey;
+          const cfg = PLAYS_CONFIG[detectedPlayKey];
+          const v = activeVideoElement || document.querySelector('video');
+          if (v && cfg.subtitlesUrl) {
+            if (isKeyChanged || v.dataset.ntaSubsUrl !== cfg.subtitlesUrl) {
               injectSubtitlesTrack(v, cfg.subtitlesUrl);
             }
           }
@@ -2318,8 +2386,14 @@
           delete video.dataset.ntaSubsUrl;
         }
         updateStatusPill(false);
+        const curConfig = getCurrentConfig();
+        const key = getPlayKey(curConfig);
+        if (window.self === window.top) {
+          broadcastToFrames({ type: 'NTA_SET_ACTIVE_PLAY', playKey: key });
+          updateDrawerUI();
+        }
       }
-    }, 1500);
+    }, 1200);
   }
 
   /* ==========================================================================
