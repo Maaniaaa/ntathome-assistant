@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NT at Home - Anglický divadelní asistent
 // @namespace    https://github.com/Maaniaaa/ntathome-assistant
-// @version      2.2.0
-// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken a trvalou regulací rychlosti videa.
+// @version      2.3.0
+// @description  Výukový asistent pro National Theatre at Home (Vimeo OTT): The Fifth Step, The Importance of Being Earnest, Our Town, The Seagull, Antigone, Macbeth, All My Sons a Hamlet s českými titulky, bilingvními shrnutími scén, možností vypnutí výukových oken, novými velkými režimy titulků pro TV (HDMI na televizi) a trvalou regulací rychlosti videa.
 // @author       NT Assistant Team
 // @match        *://*.ntathome.com/*
 // @match        *://ntathome.com/*
@@ -859,7 +859,13 @@
   let czSubtitlesEnabled = localStorage.getItem('nta_subs_enabled') !== '0';
   let checkpointsEnabled = localStorage.getItem('nta_checkpoints_enabled') !== '0'; // Výchozí: Zapnuto
   let targetPlaybackRate = parseFloat(localStorage.getItem('nta_playback_rate') || '1.0');
-  let currentSubtitleSize = localStorage.getItem('nta_sub_size') || '1.55rem'; // Výchozí: Velké (~25px)
+  const LEGACY_SIZE_MAP = {
+    '1.25rem': '1.4rem',
+    '1.55rem': '1.9rem',
+    '1.95rem': '2.6rem'
+  };
+  let rawSavedSize = localStorage.getItem('nta_sub_size') || '1.9rem';
+  let currentSubtitleSize = LEGACY_SIZE_MAP[rawSavedSize] || rawSavedSize;
   let activeSummaryLang = localStorage.getItem('nta_summary_lang') || 'cz';
 
   /* ==========================================================================
@@ -1109,6 +1115,26 @@
         padding: 8px 11px;
         font-size: 13px;
       }
+      .nta-control-col {
+        background: #1e293b;
+        border-radius: 10px;
+        padding: 8px 11px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .nta-size-group {
+        display: flex;
+        gap: 4px;
+        width: 100%;
+      }
+      .nta-size-group .nta-group-btn {
+        flex: 1;
+        padding: 6px 2px;
+        text-align: center;
+        white-space: nowrap;
+        font-size: 11px;
+      }
       .nta-btn-toggle {
         background: #2563eb;
         color: white;
@@ -1219,6 +1245,14 @@
         .nta-control-row {
           padding: 6px 9px;
           font-size: 11.5px;
+        }
+        .nta-control-col {
+          padding: 6px 9px;
+          gap: 5px;
+        }
+        .nta-size-group .nta-group-btn {
+          font-size: 9.5px;
+          padding: 5px 2px;
         }
         .nta-btn-toggle {
           padding: 3px 9px;
@@ -1505,6 +1539,8 @@
     sizeStyle.textContent = `
       ::cue, video::cue {
         font-size: ${size} !important;
+        line-height: 1.35 !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.85) !important;
       }
     `;
   }
@@ -1954,13 +1990,18 @@
           </button>
         </div>
 
-        <!-- Velikost titulků -->
-        <div class="nta-control-row">
-          <span>Velikost titulků:</span>
-          <div class="nta-btn-group" id="nta-size-btns">
-            <button type="button" class="nta-group-btn" data-size="1.25rem">Střední</button>
-            <button type="button" class="nta-group-btn nta-active" data-size="1.55rem">Velké ★</button>
-            <button type="button" class="nta-group-btn" data-size="1.95rem">Extra</button>
+        <!-- Velikost titulků (včetně velkých TV režimů pro HDMI) -->
+        <div class="nta-control-col">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+            <span>Velikost titulků:</span>
+            <span style="font-size: 10.5px; color: #38bdf8; font-weight: 600;">(i pro velkou TV 📺)</span>
+          </div>
+          <div class="nta-btn-group nta-size-group" id="nta-size-btns">
+            <button type="button" class="nta-group-btn" data-size="1.4rem" title="Střední titulky (notebook/mobil)">Střední</button>
+            <button type="button" class="nta-group-btn" data-size="1.9rem" title="Velké titulky (standard)">Velké ★</button>
+            <button type="button" class="nta-group-btn" data-size="2.6rem" title="Extra velké titulky">Extra</button>
+            <button type="button" class="nta-group-btn" data-size="3.5rem" title="Režim pro TV přes HDMI">TV 📺</button>
+            <button type="button" class="nta-group-btn" data-size="4.6rem" title="Obří titulky pro velkou TV z gauče">TV Max 🔥</button>
           </div>
         </div>
 
